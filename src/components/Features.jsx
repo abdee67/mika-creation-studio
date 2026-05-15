@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { TiLocationArrow } from "react-icons/ti";
 
 export const BentoTilt = ({ children, className = "" }) => {
@@ -38,6 +38,48 @@ export const BentoTilt = ({ children, className = "" }) => {
   );
 };
 
+const LazyFeatureVideo = ({ src, className = "" }) => {
+  const videoRef = useRef(null);
+  const [shouldLoad, setShouldLoad] = useState(false);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return undefined;
+
+    if (!("IntersectionObserver" in window)) {
+      setShouldLoad(true);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+
+        setShouldLoad(true);
+        observer.disconnect();
+      },
+      { rootMargin: "600px 0px" }
+    );
+
+    observer.observe(video);
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <video
+      ref={videoRef}
+      src={shouldLoad ? src : undefined}
+      loop
+      muted
+      autoPlay={shouldLoad}
+      playsInline
+      preload={shouldLoad ? "metadata" : "none"}
+      className={className}
+    />
+  );
+};
+
 export const BentoCard = ({ src, title, description, isComingSoon }) => {
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const [hoverOpacity, setHoverOpacity] = useState(0);
@@ -58,11 +100,8 @@ export const BentoCard = ({ src, title, description, isComingSoon }) => {
 
   return (
     <div className="relative size-full">
-      <video
+      <LazyFeatureVideo
         src={src}
-        loop
-        muted
-        autoPlay
         className="absolute left-0 top-0 size-full object-cover object-center"
       />
       <div className="relative z-10 flex size-full flex-col justify-between p-5 text-blue-50">
@@ -181,11 +220,8 @@ const Features = () => (
         </BentoTilt>
 
         <BentoTilt className="bento-tilt_2 h-72 md:h-auto">
-          <video
+          <LazyFeatureVideo
             src="videos/feature-5.mp4"
-            loop
-            muted
-            autoPlay
             className="size-full object-cover object-center"
           />
         </BentoTilt>

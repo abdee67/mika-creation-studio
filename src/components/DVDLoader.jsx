@@ -10,7 +10,12 @@ const COLORS = [
     "#00FFDD", // cyan
 ];
 
-const DVDLoader = ({ onDone, duration = 4000 }) => {
+const DVDLoader = ({
+    onDone,
+    duration = 4000,
+    isDone,
+    minimumDuration = 1200,
+}) => {
     const containerRef = useRef(null);
     const posRef = useRef({ x: 80, y: 80 });
     const velRef = useRef({ x: 2.2, y: 1.8 });
@@ -18,9 +23,16 @@ const DVDLoader = ({ onDone, duration = 4000 }) => {
     const rafRef = useRef(null);
     const logoRef = useRef(null);
     const wrapperRef = useRef(null);
+    const mountedAtRef = useRef(performance.now());
+    const doneCalledRef = useRef(false);
+    const onDoneRef = useRef(onDone);
 
     const [color, setColor] = useState(COLORS[0]);
     const [visible, setVisible] = useState(true);
+
+    useEffect(() => {
+        onDoneRef.current = onDone;
+    }, [onDone]);
 
     useEffect(() => {
         const container = containerRef.current;
@@ -59,7 +71,8 @@ const DVDLoader = ({ onDone, duration = 4000 }) => {
 
                 // corner flash
                 if (hitCorner && wrapperRef.current) {
-                    wrapperRef.current.style.transition = "background 0.05s";
+                    wrapperRef.current.style.transition =
+                        "background 0.05s, opacity 0.5s ease";
                     wrapperRef.current.style.background = COLORS[colorIdxRef.current] + "22";
                     setTimeout(() => {
                         if (wrapperRef.current)
@@ -77,21 +90,36 @@ const DVDLoader = ({ onDone, duration = 4000 }) => {
 
         rafRef.current = requestAnimationFrame(animate);
 
-        // fade out and unmount after duration
-        const fadeTimer = setTimeout(() => {
-            setVisible(false);
-        }, duration - 500);
-
-        const doneTimer = setTimeout(() => {
-            onDone?.();
-        }, duration);
-
         return () => {
             cancelAnimationFrame(rafRef.current);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (doneCalledRef.current) return undefined;
+
+        const isControlledByReady = typeof isDone === "boolean";
+        if (isControlledByReady && !isDone) return undefined;
+
+        const elapsed = performance.now() - mountedAtRef.current;
+        const fadeDelay = isControlledByReady
+            ? Math.max(minimumDuration - elapsed, 0)
+            : Math.max(duration - 500, 0);
+
+        const fadeTimer = setTimeout(() => {
+            setVisible(false);
+        }, fadeDelay);
+
+        const doneTimer = setTimeout(() => {
+            doneCalledRef.current = true;
+            onDoneRef.current?.();
+        }, fadeDelay + 500);
+
+        return () => {
             clearTimeout(fadeTimer);
             clearTimeout(doneTimer);
         };
-    }, [duration, onDone]);
+    }, [duration, isDone, minimumDuration]);
 
     return (
         <div
@@ -148,44 +176,50 @@ const DVDLoader = ({ onDone, duration = 4000 }) => {
                     {/* The logo box */}
                     <div
                         style={{
-                            padding: "10px 18px",
-                            border: `2px solid ${color}`,
-                            borderRadius: "6px",
+                            width: "clamp(170px, 22vw, 320px)",
+                            height: "clamp(86px, 10vw, 150px)",
+                            padding: "clamp(14px, 2vw, 28px)",
+                            border: `3px solid ${color}`,
+                            borderRadius: "999px",
                             transition: "border-color 0.1s, color 0.1s",
                             display: "flex",
                             flexDirection: "column",
+                            justifyContent: "center",
                             alignItems: "center",
-                            gap: "2px",
+                            gap: "clamp(3px, 0.5vw, 8px)",
+                            background:
+                                "radial-gradient(ellipse at 50% 30%, rgba(255,255,255,0.12), transparent 58%), rgba(0,0,0,0.3)",
+                            boxShadow: `inset 0 0 22px ${color}22`,
                         }}
                     >
                         {/* Main logo text — replace with your actual logo/name */}
                         <span
                             style={{
-                                fontSize: "28px",
+                                fontSize: "clamp(42px, 7vw, 92px)",
                                 fontWeight: 900,
                                 fontFamily: "'Arial Black', sans-serif",
-                                letterSpacing: "-0.03em",
+                                letterSpacing: 0,
                                 color: color,
-                                lineHeight: 1,
+                                lineHeight: 0.82,
                                 transition: "color 0.1s",
                                 userSelect: "none",
                             }}
                         >
-                            OAR
+                            DVD
                         </span>
                         <span
                             style={{
-                                fontSize: "7px",
-                                letterSpacing: "0.35em",
+                                fontSize: "clamp(8px, 1vw, 13px)",
+                                letterSpacing: "0.45em",
                                 textTransform: "uppercase",
                                 color: color,
-                                opacity: 0.7,
+                                opacity: 0.8,
                                 fontFamily: "monospace",
                                 transition: "color 0.1s",
                                 userSelect: "none",
                             }}
                         >
-                            On A Rebel
+                            Mikis Studio
                         </span>
                     </div>
 
@@ -194,8 +228,8 @@ const DVDLoader = ({ onDone, duration = 4000 }) => {
                         style={{
                             position: "absolute",
                             inset: 0,
-                            borderRadius: "6px",
-                            boxShadow: `0 0 24px 4px ${color}55`,
+                            borderRadius: "999px",
+                            boxShadow: `0 0 34px 8px ${color}66`,
                             transition: "box-shadow 0.1s",
                             pointerEvents: "none",
                         }}

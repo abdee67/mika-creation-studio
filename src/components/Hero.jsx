@@ -2,7 +2,7 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/all";
 import { TiLocationArrow } from "react-icons/ti";
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import Button from "./Button";
 import VideoPreview from "./VideoPreview";
@@ -12,6 +12,11 @@ gsap.registerPlugin(ScrollTrigger);
 
 const totalVideos = 4;
 const videos = Array.from({ length: totalVideos }, (_, index) => index + 1);
+const requiredHeroAssets = [
+  "noise-image",
+  "logo-image",
+  ...videos.map((videoIndex) => `hero-video-${videoIndex}`),
+];
 const homeSlots = {
   1: "topRight",
   2: "bottomLeft",
@@ -24,11 +29,42 @@ const Hero = () => {
   const [clickedIndex, setClickedIndex] = useState(1);
   const [hasClicked, setHasClicked] = useState(false);
   const [showLoader, setShowLoader] = useState(true);
+  const [isHeroReady, setIsHeroReady] = useState(false);
 
   const clickVideoRef = useRef(null);
   const activeIndexRef = useRef(1);
+  const readyAssetsRef = useRef(new Set());
 
   const getNextIndex = (index) => (index % totalVideos) + 1;
+
+  const markHeroAssetReady = useCallback((assetId) => {
+    if (readyAssetsRef.current.has(assetId)) return;
+
+    readyAssetsRef.current.add(assetId);
+
+    if (readyAssetsRef.current.size >= requiredHeroAssets.length) {
+      setIsHeroReady(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    const preloadImage = (src, assetId) => {
+      const image = new Image();
+
+      image.onload = () => markHeroAssetReady(assetId);
+      image.onerror = () => markHeroAssetReady(assetId);
+      image.src = src;
+    };
+
+    preloadImage("/img/noise.png", "noise-image");
+    preloadImage("/img/logo.png", "logo-image");
+
+    const fallbackTimer = setTimeout(() => {
+      setIsHeroReady(true);
+    }, 30000);
+
+    return () => clearTimeout(fallbackTimer);
+  }, [markHeroAssetReady]);
 
   const handleMiniVdClick = () => {
     const nextIndex = getNextIndex(activeIndexRef.current);
@@ -206,7 +242,11 @@ const Hero = () => {
   return (
     <>
       {showLoader && (
-        <DVDLoader duration={4000} onDone={() => setShowLoader(false)} />
+        <DVDLoader
+          isDone={isHeroReady}
+          minimumDuration={3000}
+          onDone={() => setShowLoader(false)}
+        />
       )}
 
       <div id="hero" className="relative h-dvh w-full overflow-x-hidden">
@@ -230,6 +270,10 @@ const Hero = () => {
               loop
               muted
               playsInline
+              preload="auto"
+              onCanPlay={() => markHeroAssetReady(`hero-video-${videoIndex}`)}
+              onLoadedData={() => markHeroAssetReady(`hero-video-${videoIndex}`)}
+              onError={() => markHeroAssetReady(`hero-video-${videoIndex}`)}
               data-hero-slot-video
               className="absolute left-0 top-0 object-cover object-center"
             />
@@ -246,6 +290,7 @@ const Hero = () => {
                   loop
                   muted
                   playsInline
+                  preload="metadata"
                   id="current-video"
                   className="size-36 origin-center scale-150 object-cover object-center sm:size-52 md:size-64"
                 />
@@ -259,6 +304,7 @@ const Hero = () => {
             loop
             muted
             playsInline
+            preload="metadata"
             id="click-video"
             className="absolute-center invisible absolute z-20 size-36 object-cover object-center sm:size-52 md:size-64"
           />
