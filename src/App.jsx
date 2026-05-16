@@ -4,6 +4,7 @@ import Features from "./components/Features";
 import Story from "./components/Story";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
+import Services from "./components/service";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
       <Hero />
       <Features />
       <Story />
+      <Services />
       <Contact />
       <Footer />
     </main>
