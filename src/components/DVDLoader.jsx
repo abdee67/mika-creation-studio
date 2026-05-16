@@ -205,7 +205,7 @@ const DVDLoader = ({
                                 userSelect: "none",
                             }}
                         >
-                            DVD
+                            MCS
                         </span>
                         <span
                             style={{
