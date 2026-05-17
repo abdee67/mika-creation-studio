@@ -6,6 +6,7 @@ import { TiLocationArrow } from "react-icons/ti";
 import { FaBars, FaTimes } from "react-icons/fa";
 
 import Button from "./Button";
+import { assetPath } from "../utils/assetPath";
 
 const navItems = [
   { label: "HOME", href: "#hero" },
@@ -79,7 +80,7 @@ const NavBar = () => {
         <nav className="relative flex size-full items-center justify-between p-3 sm:p-4">
           {/* Logo and Product button */}
           <div className="flex min-w-0 items-center gap-3 sm:gap-7">
-            <img src="/img/logo.png" alt="logo" className="w-9 shrink-0 sm:w-10" />
+            <img src={assetPath("img/logo.png")} alt="logo" className="w-9 shrink-0 sm:w-10" />
 
             <Button
               id="product-button"
@@ -111,7 +112,7 @@ const NavBar = () => {
               <audio
                 ref={audioElementRef}
                 className="hidden"
-                src="/audio/loop.mp3"
+                src={assetPath("audio/loop.mp3")}
                 loop
               />
               {[1, 2, 3, 4].map((bar) => (
