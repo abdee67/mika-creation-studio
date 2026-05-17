@@ -242,34 +242,34 @@ const Contact = () => {
                 className="font-zentry font-black uppercase text-blue-50/80"
                 style={{ fontSize: "clamp(0.85rem,2vw,1rem)", letterSpacing: "-0.02em" }}
               >
-                On A Rebel
+                Mika Creations
               </span>
               <span className="h-3 w-px bg-white/15" />
-              <span className="font-robert-regular text-[10px] text-blue-50/25 sm:text-[11px]">
+              <span className="font-robert-regular text-[10px] text-blue-20/25 sm:text-[11px]">
                 © {new Date().getFullYear()} All rights reserved.
               </span>
             </div>
 
             {/* Powered-by — dev credit */}
             <div className="ml-auto flex items-center gap-2">
-              <span className="font-robert-regular text-[10px] text-blue-50/20 sm:text-[11px]">
+              <span className="font-robert-regular text-[10px] text-blue-30/20 sm:text-[11px]">
                 crafted by
               </span>
               <a
                 href="https://t.me/ClassNotFound"
                 target="_blank"
                 rel="noreferrer"
-                className="group relative inline-flex items-center gap-1.5 overflow-hidden rounded-sm border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 transition-all duration-300 hover:border-yellow-300/30 hover:bg-yellow-300/5"
+                className="group relative inline-flex items-center gap-1.5 overflow-hidden  bg-white/[0.03] px-2.5 py-1 transition-all duration-300 hover:bg-blue-300/5"
               >
                 {/* blinking cursor */}
-                <span className="animate-pulse font-general text-[10px] text-yellow-300/60">
+                <span className="animate-pulse font-general text-[20px] text-blue-20/60">
                   _
                 </span>
-                <span className="font-general text-[10px] uppercase tracking-[0.2em] text-blue-50/50 transition-colors group-hover:text-yellow-300/80">
+                <span className="font-general text-[10px] tracking-[0.2em] text-blue-20/50 transition-colors group-hover:text-blue-300/80">
                   ClassNotFound
                 </span>
                 {/* trailing slash — dev nod */}
-                <span className="font-general text-[10px] text-blue-50/20 group-hover:text-yellow-300/40">
+                <span className="font-general text-[10px] text-blue-20/20 group-hover:text-blue-300/40">
                   /&gt;
                 </span>
               </a>
