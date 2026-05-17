@@ -3,7 +3,7 @@ import NavBar from "./components/Navbar";
 import Features from "./components/Features";
 import Story from "./components/Story";
 import Contact from "./components/Contact";
-import Footer from "./components/Footer";
+import FinalFooterLogo from "./components/final_footer_logo";
 import Services from "./components/service";
 
 function App() {
@@ -15,7 +15,7 @@ function App() {
       <Story />
       <Services />
       <Contact />
-      <Footer />
+     {/* <FinalFooterLogo /> */}
     </main>
   );
 }
