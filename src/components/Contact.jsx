@@ -57,7 +57,7 @@ const SocialPill = ({ icon: Icon, label, href, color }) => (
     href={href}
     target={href.startsWith("mailto") ? "_self" : "_blank"}
     rel="noreferrer"
-    className="group flex flex-1 flex-col items-center justify-center gap-1.5 rounded-xl border py-3 transition-all duration-300 hover:border-white/20 hover:bg-white/[0.07] sm:py-4"
+    className="group flex flex-1 flex-col items-center justify-center gap-1.5 py-3 transition-all duration-300 sm:py-4"
   >
     <Icon
       style={{ color, fontSize: "clamp(20px, 4vw, 26px)" }}
@@ -234,7 +234,7 @@ const Contact = () => {
           {/* Full-width hairline */}
           <div className="mb-5 h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-          <div className="flex flex-wrap items-center justify-between gap-y-3 gap-x-4">
+          <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
 
             {/* Brand + copyright */}
             <div className="flex items-center gap-3">
@@ -251,7 +251,7 @@ const Contact = () => {
             </div>
 
             {/* Powered-by — dev credit */}
-            <div className="flex items-center gap-2 ml-auto">
+            <div className="ml-auto flex items-center gap-2">
               <span className="font-robert-regular text-[10px] text-blue-50/20 sm:text-[11px]">
                 crafted by
               </span>
