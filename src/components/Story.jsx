@@ -175,15 +175,7 @@ const Story = () => {
   }, []);
 
   useGSAP(() => {
-    // Section fade-in on enter
-    gsap.from(sectionRef.current, {
-      opacity: 0, duration: 1, ease: "power2.out",
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: "top 90%",
-        toggleActions: "play none none reverse",
-      },
-    });
+
 
     // Heading slide up
     gsap.from(headRef.current, {
