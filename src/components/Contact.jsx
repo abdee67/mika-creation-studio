@@ -90,9 +90,9 @@ const Contact = () => {
     >
       {/* ── Decorative background ── */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <img src={assetPath("img/noise.png")} alt="" aria-hidden="true"
+        <img src={assetPath("img/noise.png")} alt="" loading="lazy" decoding="async" aria-hidden="true"
           className="contact-noise-x contact-noise-x-a" />
-        <img src={assetPath("img/noise.png")} alt="" aria-hidden="true"
+        <img src={assetPath("img/noise.png")} alt="" loading="lazy" decoding="async" aria-hidden="true"
           className="contact-noise-x contact-noise-x-b" />
         <div className="contact-bg-title-wrap absolute left-1/2 top-[53%] z-[1] w-[92vw] -translate-x-1/2 -translate-y-1/2 md:top-1/2 md:w-[116vw]">
           <h2
@@ -245,31 +245,31 @@ const Contact = () => {
                 Mika Creations
               </span>
               <span className="h-3 w-px bg-white/15" />
-              <span className="font-robert-regular text-[10px] text-blue-20/25 sm:text-[11px]">
+              <span className="font-robert-regular text-[10px] text-blue-50/25 sm:text-[11px]">
                 © {new Date().getFullYear()} All rights reserved.
               </span>
             </div>
 
             {/* Powered-by — dev credit */}
             <div className="ml-auto flex items-center gap-2">
-              <span className="font-robert-regular text-[10px] text-blue-30/20 sm:text-[11px]">
+              <span className="font-robert-regular text-[10px] text-blue-50/20 sm:text-[11px]">
                 crafted by
               </span>
               <a
                 href="https://t.me/ClassNotFound"
                 target="_blank"
                 rel="noreferrer"
-                className="group relative inline-flex items-center gap-1.5 overflow-hidden  bg-white/[0.03] px-2.5 py-1 transition-all duration-300 hover:bg-blue-300/5"
+                className="group relative inline-flex items-center gap-1.5 overflow-hidden bg-white/[0.03] px-2.5 py-1 transition-all duration-300 hover:bg-blue-300/5"
               >
                 {/* blinking cursor */}
-                <span className="animate-pulse font-general text-[20px] text-blue-20/60">
+                <span className="animate-pulse font-general text-[20px] text-blue-50/60">
                   _
                 </span>
-                <span className="font-general text-[10px] tracking-[0.2em] text-blue-20/50 transition-colors group-hover:text-blue-300/80">
+                <span className="font-general text-[10px] tracking-[0.2em] text-blue-50/50 transition-colors group-hover:text-blue-300/80">
                   ClassNotFound
                 </span>
                 {/* trailing slash — dev nod */}
-                <span className="font-general text-[10px] text-blue-20/20 group-hover:text-blue-300/40">
+                <span className="font-general text-[10px] text-blue-50/20 group-hover:text-blue-300/40">
                   /&gt;
                 </span>
               </a>

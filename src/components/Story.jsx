@@ -120,7 +120,7 @@ const VertCol = ({ imgs, dir, speed = 7, height }) => {
             overflow: "hidden",
             flexShrink: 0,
           }}>
-            <img src={src} alt="" loading="lazy"
+            <img src={src} alt="" loading="lazy" decoding="async"
               style={{
                 width: "100%",
                 height: "100%",
@@ -128,6 +128,7 @@ const VertCol = ({ imgs, dir, speed = 7, height }) => {
                 display: "block",
                 transform: "translateZ(0) scale(1.16)",
                 backfaceVisibility: "hidden",
+                loading:"lazy",
               }} />
             <div style={{
               ...imageEdgeFade,
@@ -327,7 +328,7 @@ const Story = () => {
                 aspectRatio: "3/4",
                 overflow: "hidden",
               }}>
-                <img src={src} alt="" loading="lazy"
+                <img src={src} alt="" loading="lazy" decoding="async"
                   style={{
                     width: "100%",
                     height: "100%",
