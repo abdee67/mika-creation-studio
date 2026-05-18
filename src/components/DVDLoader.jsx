@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { assetPath } from "../utils/assetPath";
 
 const COLORS = [
     "#FF4D4D", // red
@@ -135,8 +136,9 @@ const DVDLoader = ({
             }}
         >
             <img
-                src="/img/noise.png"
+                src={assetPath("img/noise.png")}
                 alt=""
+                rel="preload"
                 aria-hidden="true"
                 style={{
                     position: "absolute",
@@ -219,7 +221,7 @@ const DVDLoader = ({
                                 userSelect: "none",
                             }}
                         >
-                            Mikis Studio
+                            Mika Creation
                         </span>
                     </div>
 

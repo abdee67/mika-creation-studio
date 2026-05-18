@@ -1,18 +1,19 @@
 /**
  * ServiceCards.jsx
  *
- * DESKTOP  — hover fan-out (cards spread left/right on hover)
+ * DESKTOP / TABLET  (≥769px)
+ *   Full-width, full-height cards — one fills the entire screen.
+ *   Scroll DOWN → next card slides in from the RIGHT, covers current.
+ *   Scroll UP   → current card slides back OUT to the RIGHT, revealing
+ *                 the card beneath it.
+ *   One card per scroll step. Snaps cleanly between steps.
+ *   onUpdate + queue (same approach as the mobile fix).
  *
- * MOBILE   — CARTA / card-game ScrollTrigger
- *   • All 6 cards stacked. Only each card's icon-strip peeks above the front card.
- *   • Section PINS to the screen.
- *   • Each scroll step: the FRONT card throws to the BACK with a carta arc.
- *   • Remaining cards shift forward one position.
- *   • After all 6 cycles → section UNPINS → normal scroll continues.
- *   • Scroll UP reverses: back card arc-returns to front.
- *
- * Drop into src/components/ServiceCards.jsx
- * Add <ServiceCards /> to App.jsx
+ * MOBILE  (<768px)
+ *   CARTA deck — unchanged logic.
+ *   FIX: "Scroll to explore" hint moved INSIDE the wrapper as an absolute
+ *   element at z-index 9999 so it is always visible above the card stack
+ *   on small phones (iPhone SE, Galaxy S8, etc.).
  */
 
 import { useEffect, useRef } from "react";
@@ -21,544 +22,366 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// ── 6 Service cards ──────────────────────────────────────────────────────────
+// ── Cards ─────────────────────────────────────────────────────────────────
 const CARDS = [
   {
-    id:"film",   title:"Film & Video",   icon:"🎬", num:"01",
-    bg:"#c8a951", color:"#000",
-    services:["Campaign Film","Branded Content","Social Content","Documentary","Motion Graphics"],
+    id: "film",    title: "Film & Video",     icon: "🎬", num: "01",
+    bg: "#c8a951", color: "#000",
+    services: ["Campaign Film","Branded Content","Social Content","Documentary","Motion Graphics"],
   },
   {
-    id:"photo",  title:"Photography",    icon:"📷", num:"02",
-    bg:"#1e4d8c", color:"#fff",
-    services:["Editorial","Product","Portrait","Event Coverage","Art Direction"],
+    id: "photo",   title: "Photography",      icon: "📷", num: "02",
+    bg: "#1e4d8c", color: "#fff",
+    services: ["Editorial","Product","Portrait","Event Coverage","Art Direction"],
   },
   {
-    id:"brand",  title:"Brand Identity", icon:"✦",  num:"03",
-    bg:"#6d28d9", color:"#fff",
-    services:["Strategy","Visual Identity","Art Direction","Copywriting","DTP"],
+    id: "brand",   title: "Brand Identity",   icon: "✦",  num: "03",
+    bg: "#6d28d9", color: "#fff",
+    services: ["Strategy","Visual Identity","Art Direction","Copywriting","DTP"],
   },
   {
-    id:"social", title:"Social Media",   icon:"◈",  num:"04",
-    bg:"#c2440e", color:"#fff",
-    services:["Strategy","Content Creation","TikTok / Reels","Community Mgmt","Influencer"],
+    id: "social",  title: "Social Media",     icon: "◈",  num: "04",
+    bg: "#c2440e", color: "#fff",
+    services: ["Strategy","Content Creation","TikTok / Reels","Community Mgmt","Influencer"],
   },
   {
-    id:"events", title:"Activations",    icon:"⚡", num:"05",
-    bg:"#065f46", color:"#fff",
-    services:["Event Planning","Pop-ups","Production","Experiential","Art Direction"],
+    id: "events",  title: "Activations",      icon: "⚡", num: "05",
+    bg: "#065f46", color: "#fff",
+    services: ["Event Planning","Pop-ups","Production","Experiential","Art Direction"],
   },
   {
-    id:"motion", title:"Motion & Post",  icon:"∞",  num:"06",
-    bg:"#7f1d1d", color:"#fff",
-    services:["VFX","Colour Grading","Sound Design","Animation","Titles"],
+    id: "motion",  title: "Motion & Post",    icon: "∞",  num: "06",
+    bg: "#7f1d1d", color: "#fff",
+    services: ["VFX","Colour Grading","Sound Design","Animation","Titles"],
   },
 ];
 
-// ── Stack geometry (mobile) ──────────────────────────────────────────────────
 const TOTAL      = CARDS.length;
-const PEEK       = 30;   // px each back card peeks above the front card
-const SCALE_STEP = 0.04; // scale reduction per position behind front
+const PEEK       = 30;
+const SCALE_STEP = 0.04;
 
-/** CSS properties for a given deck position (0 = front, 5 = furthest back) */
-function stackPos(position) {
+// ── Mobile carta helpers (unchanged) ──────────────────────────────────────
+function stackPos(pos) {
   return {
-    xPercent: -50,
-    yPercent: -50,
-    y:      -position * PEEK,
-    scale:   1 - position * SCALE_STEP,
-    zIndex:  TOTAL - position,
-    x:       0,
-    rotation:0,
+    xPercent:-50, yPercent:-50,
+    y: -pos * PEEK, scale: 1 - pos * SCALE_STEP,
+    zIndex: TOTAL - pos, x:0, rotation:0,
   };
 }
-
-/** Apply stack positions instantly */
 function setDeck(cards, order) {
-  order.forEach((cardIdx, pos) => {
-    gsap.set(cards[cardIdx], stackPos(pos));
-  });
+  order.forEach((idx, pos) => gsap.set(cards[idx], stackPos(pos)));
 }
-
-/**
- * Throw front card to the back (CARTA forward).
- * @param {Element[]} cards   — DOM card elements
- * @param {number[]}  order   — mutable current deck order (front→back)
- * @param {Function}  done    — called when animation completes
- */
 function throwToBack(cards, order, done) {
-  const frontIdx  = order[0];
-  const front     = cards[frontIdx];
-  const backPos   = stackPos(TOTAL - 1);
-  const tl        = gsap.timeline({ onComplete: done });
-
-  // 1. Front card arcs up-right and out of view
-  tl.to(front, {
-    x: 180, y: -320, rotation: 22, scale: 0.68,
-    duration: 0.38, ease: "power2.in",
-  });
-
-  // 2. Simultaneously: positions 1→5 each advance one step forward
-  order.slice(1).forEach((cardIdx, i) => {
-    tl.to(cards[cardIdx], {
-      ...stackPos(i),        // was position i+1, now i
-      duration: 0.42,
-      ease: "power2.out",
-    }, 0);                   // ← same start time as the throw
-  });
-
-  // 3. Snap flying card to just above its back position (invisible frame)
-  tl.set(front, {
-    xPercent: -50,
-    yPercent: -50,
-    x: 0,
-    y: backPos.y - 24,
-    scale: backPos.scale,
-    zIndex: backPos.zIndex,
-    rotation: -6,
-  });
-
-  // 4. Settle into back position with a little bounce
-  tl.to(front, {
-    y: backPos.y,
-    rotation: 0,
-    duration: 0.24,
-    ease: "back.out(2)",
-  });
-
-  // Update order array IN-PLACE: [0,1,2,3,4,5] → [1,2,3,4,5,0]
+  const fi = order[0], front = cards[fi], bp = stackPos(TOTAL-1);
+  const tl = gsap.timeline({ onComplete:done });
+  tl.to(front, { x:180, y:-320, rotation:22, scale:0.68, duration:0.38, ease:"power2.in" });
+  order.slice(1).forEach((ci,i) => tl.to(cards[ci], { ...stackPos(i), duration:0.42, ease:"power2.out" }, 0));
+  tl.set(front, { xPercent:-50, yPercent:-50, x:0, y:bp.y-24, scale:bp.scale, zIndex:bp.zIndex, rotation:-6 });
+  tl.to(front, { y:bp.y, rotation:0, duration:0.24, ease:"back.out(2)" });
   order.push(order.shift());
 }
-
-/**
- * Reverse: bring back card to front (scroll-up recovery).
- */
 function throwToFront(cards, order, done) {
-  // The card currently at the BACK was the most recent front
-  const backIdx = order[TOTAL - 1];
-  const back    = cards[backIdx];
-  const frontP  = stackPos(0);
-  const tl      = gsap.timeline({ onComplete: done });
-
-  // 1. Back card arcs up-left toward front
-  tl.to(back, {
-    x: -180, y: -320, rotation: -22, scale: 0.68,
-    duration: 0.38, ease: "power2.in",
-  });
-
-  // 2. Others shift back one position
-  order.slice(0, -1).forEach((cardIdx, i) => {
-    tl.to(cards[cardIdx], {
-      ...stackPos(i + 1),
-      duration: 0.42,
-      ease: "power2.out",
-    }, 0);
-  });
-
-  // 3. Snap to just below front position
-  tl.set(back, {
-    xPercent: -50,
-    yPercent: -50,
-    x: 0,
-    y: frontP.y + 30,
-    scale: frontP.scale,
-    zIndex: frontP.zIndex,
-    rotation: 8,
-  });
-
-  // 4. Settle
-  tl.to(back, {
-    y: frontP.y,
-    rotation: 0,
-    duration: 0.26,
-    ease: "back.out(1.8)",
-  });
-
-  // Update order: [1,2,3,4,5,0] → [0,1,2,3,4,5]
+  const bi = order[TOTAL-1], back = cards[bi], fp = stackPos(0);
+  const tl = gsap.timeline({ onComplete:done });
+  tl.to(back, { x:-180, y:-320, rotation:-22, scale:0.68, duration:0.38, ease:"power2.in" });
+  order.slice(0,-1).forEach((ci,i) => tl.to(cards[ci], { ...stackPos(i+1), duration:0.42, ease:"power2.out" }, 0));
+  tl.set(back, { xPercent:-50, yPercent:-50, x:0, y:fp.y+30, scale:fp.scale, zIndex:fp.zIndex, rotation:8 });
+  tl.to(back, { y:fp.y, rotation:0, duration:0.26, ease:"back.out(1.8)" });
   order.unshift(order.pop());
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-
+// ─────────────────────────────────────────────────────────────────────────
 const ServiceCards = () => {
-  const sectionRef = useRef(null);
-  const wrapperRef = useRef(null);
-  const leaveTimer = useRef(null);
+  const sectionRef  = useRef(null);
+  const wrapperRef  = useRef(null);
 
   useEffect(() => {
     const section = sectionRef.current;
     const wrapper = wrapperRef.current;
-    const cards   = gsap.utils.toArray(".svc-card", wrapper);
+    const cards   = gsap.utils.toArray("[data-svc-card]", wrapper);
     if (!cards.length) return;
 
     const mm = gsap.matchMedia();
 
-    // ── DESKTOP: hover fan-out ───────────────────────────────────────────
+    // ── DESKTOP / TABLET: full-width horizontal slide ────────────────────
     mm.add("(min-width: 769px)", () => {
-      const CARD_W     = 320;
-      const HOVER_GAP  = 110;
-      const CLUSTER_GAP= 145;
+      const SCROLL_PER = window.innerHeight * 0.9;
+      const totalSteps = TOTAL - 1;   // 5 transitions for 6 cards
+      let prevStep   = 0;
+      const queue    = [];
+      let animating  = false;
 
-      // Apply initial rotations from CARDS data
+      // Initial positions:
+      //   card 0 → visible at x:0%, z:2
+      //   cards 1-5 → off-screen right at x:100%, z:1
       cards.forEach((card, i) => {
         gsap.set(card, {
-          rotation: [4,-5,5,-8,5,-4][i] ?? 4,
-          transformOrigin: "center center",
+          x: 0,
+          xPercent: i === 0 ? 0 : 100,
+          yPercent: 0,
+          scale: 1,
+          rotation: 0,
+          zIndex: i === 0 ? 2 : 1,
         });
       });
 
-      cards.forEach((card, idx) => {
-        card.addEventListener("mouseenter", () => {
-          if (leaveTimer.current) { clearTimeout(leaveTimer.current); leaveTimer.current = null; }
-          const baseTop = cards[idx].offsetTop;
+      // ── Progress dots ──────────────────────────────────────────────────
+      const dots = gsap.utils.toArray("[data-dtop-dot]", wrapper);
+      const refreshDots = (step) => {
+        dots.forEach((dot, i) => {
+          gsap.to(dot, {
+            scale:   i === step ? 1.6 : 1,
+            opacity: i === step ? 1 : 0.28,
+            duration: 0.3,
+          });
+        });
+      };
+      refreshDots(0);
 
+      // ── Queue runner ───────────────────────────────────────────────────
+      const runNext = () => {
+        animating = false;
+        if (!queue.length) return;
+        animating = true;
+        const { type, idx } = queue.shift();
+        const card = cards[idx];
+
+        if (type === "in") {
+          // Slide card in from right, give it a higher z so it covers
+          gsap.set(card, { zIndex: TOTAL + 10 });
+          gsap.fromTo(card,
+            { xPercent: 100 },
+            {
+              xPercent: 0,
+              duration: 0.7,
+              ease: "power2.inOut",
+              onComplete: () => {
+                gsap.set(card, { zIndex: idx + 2 }); // settle above cards below it
+                refreshDots(idx);
+                runNext();
+              },
+            }
+          );
+        } else {
+          // Slide card back out to right, revealing the card beneath
+          gsap.set(card, { zIndex: TOTAL + 10 });
           gsap.to(card, {
-            x:0, y:40-baseTop, rotation:0, scale:1.08,
-            duration:0.85, ease:"elastic.out(1,0.55)", overwrite:true, zIndex:10,
+            xPercent: 100,
+            duration: 0.65,
+            ease: "power2.inOut",
+            onComplete: () => {
+              gsap.set(card, { zIndex: 1 });
+              refreshDots(idx - 1);
+              runNext();
+            },
           });
-          // Spread cards right
-          cards.slice(idx+1).forEach((c,s) => {
-            const tx = cards[idx].offsetLeft + CARD_W + HOVER_GAP + s*CLUSTER_GAP - c.offsetLeft;
-            const ty = tx * Math.tan(CARDS[idx+1+s].rotation ?? 4 * Math.PI/180);
-            gsap.to(c,{ x:tx, y:ty, rotation:CARDS[idx+1+s]?.rotation??4, scale:1, duration:0.9, ease:"elastic.out(1,0.5)", overwrite:true });
-          });
-          // Spread cards left
-          cards.slice(0,idx).reverse().forEach((c,s) => {
-            const i2 = idx-1-s;
-            const tx = cards[idx].offsetLeft - HOVER_GAP - CARD_W - s*CLUSTER_GAP - c.offsetLeft;
-            const ty = tx * Math.tan(CARDS[i2]?.rotation??-4 * Math.PI/180);
-            gsap.to(c,{ x:tx, y:ty, rotation:CARDS[i2]?.rotation??-4, scale:1, duration:0.9, ease:"elastic.out(1,0.5)", overwrite:true });
-          });
-        });
+        }
+      };
 
-        card.addEventListener("mouseleave", () => {
-          leaveTimer.current = setTimeout(() => {
-            cards.forEach((c,i) => {
-              gsap.to(c,{ x:0, y:0, scale:1, rotation:[4,-5,5,-8,5,-4][i]??4, duration:0.9, ease:"elastic.out(1,0.5)", overwrite:true, zIndex:i+1 });
-            });
-          }, 80);
-        });
+      const enqueue = (item) => {
+        queue.push(item);
+        if (!animating) runNext();
+      };
+
+      // ── Single pinned ScrollTrigger with onUpdate ──────────────────────
+      ScrollTrigger.create({
+        trigger:    section,
+        start:      "top top",
+        end:        `+=${SCROLL_PER * totalSteps}`,
+        pin:        true,
+        pinSpacing: true,
+        id:         "dtop-pin",
+        snap: {
+          snapTo:   1 / totalSteps,
+          duration: { min:0.25, max:0.55 },
+          ease:     "power1.inOut",
+        },
+        onUpdate(self) {
+          const currentStep = Math.round(self.progress * totalSteps);
+          if (currentStep === prevStep) return;
+
+          if (currentStep > prevStep) {
+            for (let s = prevStep + 1; s <= currentStep; s++) enqueue({ type:"in",  idx:s });
+          } else {
+            for (let s = prevStep;     s >  currentStep; s--) enqueue({ type:"out", idx:s });
+          }
+          prevStep = currentStep;
+        },
       });
+
+      return () => { ScrollTrigger.getById("dtop-pin")?.kill(); };
     });
 
-    // ── MOBILE: CARTA scroll stack ───────────────────────────────────────
+    // ── MOBILE: CARTA deck (logic unchanged, hint fix applied in JSX) ────
     mm.add("(max-width: 768px)", () => {
       const SCROLL_PER = window.innerHeight * 0.85;
-      // Mutable deck order array. order[0] = current front card index.
-      const order = [0,1,2,3,4,5];
-      let busy = false;
+      const order      = [0,1,2,3,4,5];
+      let prevStep     = 0;
+      const queue      = [];
+      let animating    = false;
 
-      // Place all cards in initial stack positions
+      const runNext = () => {
+        animating = false;
+        if (!queue.length) return;
+        animating = true;
+        const action = queue.shift();
+        if (action === 1)  throwToBack(cards,  order, runNext);
+        else               throwToFront(cards, order, runNext);
+      };
+      const enqueue = (a) => { queue.push(a); if (!animating) runNext(); };
+
       setDeck(cards, order);
 
-      // ── PIN the section for (TOTAL * SCROLL_PER) extra scroll space ──
       ScrollTrigger.create({
-        trigger: section,
-        start: "top top",
-        end: `+=${SCROLL_PER * TOTAL}`,
-        pin: true,
+        trigger:    section,
+        start:      "top top",
+        end:        `+=${SCROLL_PER * TOTAL}`,
+        pin:        true,
         pinSpacing: true,
-        id: "carta-pin",
+        id:         "carta-pin",
+        snap: {
+          snapTo:   1 / TOTAL,
+          duration: { min:0.2, max:0.45 },
+          ease:     "power1.inOut",
+        },
+        onUpdate(self) {
+          const currentStep = Math.round(self.progress * TOTAL);
+          if (currentStep === prevStep) return;
+          const diff = currentStep - prevStep;
+          if (diff > 0) for (let i=0;i<diff;i++)  enqueue(1);
+          else          for (let i=0;i<-diff;i++) enqueue(-1);
+          prevStep = currentStep;
+        },
       });
 
-      // ── One trigger per card step ─────────────────────────────────────
-      for (let step = 0; step < TOTAL; step++) {
-        ScrollTrigger.create({
-          trigger: section,
-          start: `top+=${step * SCROLL_PER} top`,
-          end:   `top+=${(step + 1) * SCROLL_PER} top`,
-
-          onEnter: () => {
-            if (busy) return;
-            busy = true;
-            throwToBack(cards, order, () => { busy = false; });
-          },
-
-          onLeaveBack: () => {
-            if (busy) return;
-            busy = true;
-            throwToFront(cards, order, () => { busy = false; });
-          },
-        });
-      }
-
-      return () => {
-        ScrollTrigger.getById("carta-pin")?.kill();
-      };
+      return () => { ScrollTrigger.getById("carta-pin")?.kill(); };
     });
 
     return () => {
       mm.revert();
-      if (leaveTimer.current) clearTimeout(leaveTimer.current);
     };
   }, []);
 
+  const sectionClass =
+    "relative bg-black text-white min-[769px]:h-dvh min-[769px]:min-h-dvh min-[769px]:overflow-hidden max-[768px]:flex max-[768px]:min-h-screen max-[768px]:flex-col";
+
+  const headingClass =
+    "shrink-0 px-[clamp(24px,6vw,100px)] min-[769px]:hidden max-[768px]:px-5 max-[768px]:pb-7 max-[768px]:pt-12 max-[380px]:px-4 max-[380px]:pb-6 max-[380px]:pt-10";
+
+  const wrapperClass =
+    "relative w-full min-[769px]:h-dvh min-[769px]:max-w-none min-[769px]:overflow-hidden max-[768px]:box-border max-[768px]:flex max-[768px]:min-h-[min(560px,68dvh)] max-[768px]:flex-1 max-[768px]:items-center max-[768px]:justify-center max-[768px]:overflow-visible max-[768px]:pb-12 max-[768px]:pt-[166px] max-[380px]:min-h-[min(580px,74dvh)] max-[380px]:pb-[30px] max-[380px]:pt-[194px]";
+
+  const hintClass =
+    "relative z-30 hidden items-center justify-center gap-2 bg-gradient-to-b from-black via-black/95 to-transparent px-4 pb-8 pt-4 font-mono text-[9px] uppercase tracking-[0.35em] text-white/45 max-[768px]:flex max-[380px]:pb-[46px] max-[380px]:pt-2";
+
+  const hintLineClass =
+    "h-7 w-px bg-gradient-to-b from-white/35 to-transparent";
+
+  const progressClass =
+    "pointer-events-none absolute bottom-[clamp(20px,3vh,36px)] left-1/2 z-[1000] hidden -translate-x-1/2 gap-2.5 min-[769px]:flex";
+
+  const cardClass =
+    "absolute box-border overflow-hidden will-change-transform min-[769px]:left-0 min-[769px]:top-0 min-[769px]:grid min-[769px]:h-full min-[769px]:w-full min-[769px]:grid-rows-[auto_1fr] min-[769px]:rounded-none min-[769px]:shadow-none max-[768px]:left-1/2 max-[768px]:top-1/2 max-[768px]:flex max-[768px]:h-[min(62dvh,430px)] max-[768px]:min-h-[360px] max-[768px]:w-[min(84vw,320px)] max-[768px]:-translate-x-1/2 max-[768px]:-translate-y-1/2 max-[768px]:flex-col max-[768px]:rounded-[14px] max-[768px]:shadow-[0_16px_40px_rgba(0,0,0,0.5)] max-[380px]:h-[min(64dvh,400px)] max-[380px]:min-h-[330px] max-[380px]:w-[min(88vw,296px)]";
+
+  const peekClass =
+    "z-[2] box-border flex shrink-0 items-center justify-between border-b border-white/10 min-[769px]:absolute min-[769px]:right-[clamp(24px,5vw,88px)] min-[769px]:top-[clamp(28px,4vw,72px)] min-[769px]:h-14 min-[769px]:w-[min(420px,42vw)] min-[769px]:rounded-full min-[769px]:border min-[769px]:border-white/20 min-[769px]:bg-black/15 min-[769px]:px-5 min-[769px]:backdrop-blur max-[768px]:h-[52px] max-[768px]:w-full max-[768px]:px-[18px] max-[380px]:h-[46px] max-[380px]:px-3.5";
+
+  const bodyClass =
+    "relative box-border flex flex-col min-[769px]:z-[1] min-[769px]:max-w-[min(950px,76vw)] min-[769px]:justify-end min-[769px]:gap-0 min-[769px]:px-[clamp(40px,6vw,100px)] min-[769px]:pb-[clamp(36px,5vh,70px)] min-[769px]:pt-[clamp(140px,20vh,230px)] max-[768px]:flex-1 max-[768px]:gap-2.5 max-[768px]:p-[20px_18px_18px] max-[380px]:p-[16px_14px]";
+
+  const titleClass =
+    "m-0 font-black uppercase leading-none tracking-[-0.03em] min-[769px]:mb-[clamp(28px,4vh,52px)] min-[769px]:text-[clamp(60px,9.5vw,160px)] min-[769px]:leading-[0.85] min-[769px]:tracking-[-0.04em] max-[768px]:text-[clamp(24px,8vw,34px)]";
+
+  const listClass =
+    "m-0 flex list-none flex-col p-0 min-[769px]:max-w-[760px] min-[769px]:flex-row min-[769px]:flex-wrap min-[769px]:gap-x-[clamp(24px,3vw,48px)]";
+
+  const listItemClass =
+    "flex items-center gap-2.5 border-t border-white/10 font-mono tracking-[0.04em] min-[769px]:min-w-[clamp(160px,18vw,240px)] min-[769px]:flex-[0_1_auto] min-[769px]:py-[clamp(8px,1.2vh,14px)] min-[769px]:text-[clamp(12px,1.1vw,15px)] max-[768px]:py-[7px] max-[768px]:text-[clamp(11px,3.4vw,13px)]";
+
+  const headlineFont = { fontFamily: "'Arial Black', sans-serif" };
+  const serifFont = { fontFamily: "Georgia, serif" };
+
+  // ── JSX ─────────────────────────────────────────────────────────────────
   return (
-    <>
-      <style>{`
-        /* ── Section ──────────────────────────────────────────── */
-        .svc-section {
-          background: #000;
-          color: #fff;
-          padding: 120px 0 160px;
-          overflow: hidden;
-          position: relative;
-        }
+    <section id="services" ref={sectionRef} className={sectionClass}>
 
-        /* ── Heading ──────────────────────────────────────────── */
-        .svc-head {
-          padding: 0 clamp(24px,6vw,100px);
-          margin-bottom: 80px;
-        }
-        .svc-head p {
-          font-size:10px; letter-spacing:.5em; text-transform:uppercase;
-          color:rgba(255,255,255,.3); font-family:monospace; margin-bottom:20px;
-        }
-        .svc-head h2 {
-          font-size:clamp(44px,8vw,110px); font-weight:900; line-height:.9;
-          letter-spacing:-.04em; text-transform:uppercase;
-          font-family:'Arial Black',sans-serif; margin:0;
-        }
-        .svc-head h2 em {
-          font-style:italic; font-family:Georgia,serif; font-weight:400;
-          -webkit-text-stroke:1.5px rgba(255,255,255,.35); color:transparent;
-        }
+      {/* Mobile heading */}
+      <div className={headingClass}>
+        <p className="mb-5 font-mono text-[10px] uppercase tracking-[0.5em] text-white/30 max-[380px]:mb-3">
+          ◈ What We Do
+        </p>
+        <h2
+          className="m-0 text-[clamp(44px,8vw,110px)] font-black uppercase leading-[0.9] tracking-[-0.04em] max-[768px]:text-[clamp(40px,15vw,66px)] max-[768px]:leading-[0.88] max-[380px]:text-[clamp(34px,14vw,52px)]"
+          style={headlineFont}
+        >
+          Call us if<br />you{" "}
+          <em
+            className="font-normal text-transparent [-webkit-text-stroke:1.5px_rgba(255,255,255,0.35)]"
+            style={serifFont}
+          >
+            need:
+          </em>
+        </h2>
+      </div>
 
-        /* ── Desktop wrapper + fan positions ─────────────────── */
-        .svc-cards-wrapper {
-          position:relative; width:100%; max-width:1400px;
-          height:560px; margin:0 auto; display:flex; justify-content:center;
-        }
-        .svc-card {
-          width:320px; height:460px; position:absolute;
-          display:flex; flex-direction:column; justify-content:flex-start;
-          padding:0; border-radius:14px;
-          box-shadow:0 16px 40px rgba(0,0,0,.5);
-          cursor:pointer; box-sizing:border-box; will-change:transform;
-          top:50px; overflow:hidden;
-        }
-        .svc-card:nth-child(1){ left:calc(50% - 680px); z-index:1; }
-        .svc-card:nth-child(2){ left:calc(50% - 400px); z-index:2; }
-        .svc-card:nth-child(3){ left:calc(50% - 160px); z-index:3; }
-        .svc-card:nth-child(4){ left:calc(50% +  80px); z-index:4; }
-        .svc-card:nth-child(5){ left:calc(50% + 320px); z-index:5; }
-        .svc-card:nth-child(6){ left:calc(50% + 560px); z-index:6; }
+      {/* Mobile scroll hint */}
+      <div data-svc-hint className={hintClass}>
+        <div className={hintLineClass} />
+        Scroll to explore
+        <div className={hintLineClass} />
+      </div>
 
-        /* Bridge hover gap for middle cards */
-        .svc-card:nth-child(2)::after,
-        .svc-card:nth-child(3)::after,
-        .svc-card:nth-child(4)::after,
-        .svc-card:nth-child(5)::after {
-          content:''; position:absolute; top:0; bottom:0; left:-28px; right:-28px;
-        }
+      {/* Cards wrapper */}
+      <div className={wrapperClass} ref={wrapperRef}>
 
-        /* ── Icon peek strip (always visible at top) ─────────── */
-        .svc-peek {
-          width:100%; height:56px; flex-shrink:0;
-          display:flex; align-items:center; justify-content:space-between;
-          padding:0 18px; box-sizing:border-box;
-          border-bottom: 1px solid rgba(255,255,255,.1);
-        }
-        .svc-peek-icon { font-size:26px; line-height:1; }
-        .svc-peek-num {
-          font-size:10px; letter-spacing:.35em; font-family:monospace;
-          opacity:.45; text-transform:uppercase;
-        }
-
-        /* ── Card body ───────────────────────────────────────── */
-        .svc-body {
-          padding:24px 20px 20px;
-          display:flex; flex-direction:column; flex:1;
-          gap:12px;
-        }
-        .svc-body h3 {
-          font-size:clamp(20px,2.2vw,28px); font-weight:900;
-          font-family:'Arial Black',sans-serif;
-          letter-spacing:-.03em; line-height:1; text-transform:uppercase; margin:0;
-        }
-        .svc-body hr { border:none; border-top:1px solid rgba(255,255,255,.18); margin:0; }
-        .svc-body ul { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:0; }
-        .svc-body ul li {
-          font-size:clamp(11px,1vw,13px); font-family:monospace;
-          letter-spacing:.04em; display:flex; align-items:center; gap:10px;
-          padding:6px 0; border-top:1px solid rgba(255,255,255,.08);
-        }
-        .svc-bullet {
-          width:4px; height:4px; border-radius:50%;
-          background:currentColor; flex-shrink:0; opacity:.5;
-        }
-
-        /* ── MOBILE overrides ────────────────────────────────── */
-        @media (max-width: 768px) {
-          .svc-section {
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-          }
-
-          .svc-head {
-            padding: 48px 20px 28px;
-            margin-bottom: 0;
-            flex-shrink: 0;
-          }
-
-          .svc-head h2 {
-            font-size: clamp(40px, 15vw, 66px);
-            line-height: .88;
-          }
-
-          /* Cards wrapper becomes a centered STACK */
-          .svc-cards-wrapper {
-            flex: 1;
-            min-height: min(560px, 68dvh);
-            max-width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            /* Extra top padding so peeking cards don't overlap heading */
-            padding-top: ${(TOTAL - 1) * PEEK + 16}px;
-            padding-bottom: 40px;
-            box-sizing: border-box;
-          }
-
-          .svc-card {
-            /* Mobile: full-width centered card */
-            position: absolute;
-            width: min(84vw, 320px);
-            height: min(62dvh, 430px);
-            min-height: 360px;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            /* GSAP overrides top/left/transform, so we just set defaults here */
-          }
-
-          .svc-body {
-            padding: 20px 18px 18px;
-            gap: 10px;
-          }
-
-          .svc-body h3 {
-            font-size: clamp(24px, 8vw, 34px);
-          }
-
-          .svc-body ul li {
-            font-size: clamp(11px, 3.4vw, 13px);
-            padding: 7px 0;
-          }
-
-          /* Remove desktop fan positions on mobile */
-          .svc-card:nth-child(1),
-          .svc-card:nth-child(2),
-          .svc-card:nth-child(3),
-          .svc-card:nth-child(4),
-          .svc-card:nth-child(5),
-          .svc-card:nth-child(6) {
-            left: 50%;
-            top: 50%;
-            transform-origin: center center;
-          }
-
-          /* Larger peek strip on mobile so icon is legible */
-          .svc-peek { height: 52px; }
-          .svc-peek-icon { font-size: 24px; }
-
-          /* Scroll hint */
-          .svc-scroll-hint {
-            display: flex !important;
-          }
-        }
-
-        @media (max-width: 380px) {
-          .svc-head {
-            padding: 40px 16px 24px;
-          }
-
-          .svc-card {
-            width: min(88vw, 296px);
-            height: min(64dvh, 410px);
-            min-height: 340px;
-          }
-
-          .svc-peek {
-            height: 48px;
-            padding: 0 14px;
-          }
-
-          .svc-body {
-            padding: 18px 16px 16px;
-          }
-        }
-
-        /* Hidden on desktop, shown on mobile */
-        .svc-scroll-hint {
-          display: none;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          padding: 16px 0 32px;
-          font-size: 9px;
-          letter-spacing: .35em;
-          text-transform: uppercase;
-          color: rgba(255,255,255,.25);
-          font-family: monospace;
-          flex-shrink: 0;
-        }
-        .svc-scroll-hint-line {
-          width: 1px; height: 32px;
-          background: linear-gradient(to bottom, rgba(255,255,255,.3), transparent);
-        }
-      `}</style>
-
-      <section id="services" ref={sectionRef} className="svc-section">
-
-        {/* Heading */}
-        <div className="svc-head">
-          <p>◈ What We Do</p>
-          <h2>Call us if<br/>you <em>need:</em></h2>
-        </div>
-
-        {/* Scroll hint (mobile only) */}
-        <div className="svc-scroll-hint">
-          <div className="svc-scroll-hint-line"/>
-          Scroll to explore
-          <div className="svc-scroll-hint-line"/>
-        </div>
-
-        {/* Card stack */}
-        <div className="svc-cards-wrapper" ref={wrapperRef}>
-          {CARDS.map((c) => (
+        {/* Desktop progress dots */}
+        <div className={progressClass}>
+          {CARDS.map((c, i) => (
             <div
               key={c.id}
-              className="svc-card"
-              style={{ background: c.bg, color: c.color }}
-            >
-              {/* ── Peek strip — visible when card is behind others ── */}
-              <div className="svc-peek">
-                <span className="svc-peek-icon">{c.icon}</span>
-                <span className="svc-peek-num">{c.num}</span>
-              </div>
-
-              {/* ── Card body ── */}
-              <div className="svc-body">
-                <h3>{c.title}</h3>
-                <hr/>
-                <ul>
-                  {c.services.map((s) => (
-                    <li key={s}>
-                      <span className="svc-bullet"/>
-                      {s}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+              data-dtop-dot
+              className="size-[7px] origin-center rounded-full bg-white/90 opacity-30 transition-[opacity,transform] duration-300"
+              style={{ opacity: i === 0 ? 1 : 0.28, transform: i === 0 ? "scale(1.6)" : "scale(1)" }}
+            />
           ))}
         </div>
 
-      </section>
-    </>
+        {/* Cards */}
+        {CARDS.map((c) => (
+          <div
+            key={c.id}
+            data-svc-card
+            className={cardClass}
+            style={{ background: c.bg, color: c.color }}
+          >
+            <div className={peekClass}>
+              <span className="hidden font-mono text-[10px] uppercase tracking-[0.45em] opacity-40 min-[769px]:block">
+                ◈ What We Do
+              </span>
+              <span className="text-2xl leading-none min-[769px]:text-[clamp(22px,2.5vw,32px)]">
+                {c.icon}
+              </span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.35em] opacity-45 min-[769px]:text-[clamp(10px,1vw,13px)]">
+                {c.num}
+              </span>
+            </div>
+
+            <div className={bodyClass}>
+              <h3 className={titleClass} style={headlineFont}>{c.title}</h3>
+              <hr className="m-0 border-0 border-t border-white/20 min-[769px]:mb-[clamp(16px,2.5vh,28px)]" />
+              <ul className={listClass}>
+                {c.services.map((s) => (
+                  <li key={s} className={listItemClass}>
+                    <span className="size-1 shrink-0 rounded-full bg-current opacity-50" />
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 };
 

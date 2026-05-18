@@ -1,21 +1,23 @@
 import Hero from "./components/Hero";
 import NavBar from "./components/Navbar";
-import Features from "./components/Features";
-import Story from "./components/Story";
-import Contact from "./components/Contact";
-import Footer from "./components/Footer";
-import Services from "./components/service";
+import { lazy, Suspense } from "react";
+const Features = lazy(() => import("./components/Features"));
+const Story = lazy(() => import("./components/Story"));
+const Contact = lazy(() => import("./components/Contact"));
+const Services = lazy(() => import("./components/service"));
 
 function App() {
   return (
     <main className="relative min-h-screen w-full overflow-x-hidden">
       <NavBar />
       <Hero />
-      <Features />
-      <Story />
-      <Services />
-      <Contact />
-      <Footer />
+      <Suspense fallback={null}>
+        <Features />
+        <Story />
+        <Services />
+        <Contact />
+        {/* <FinalFooterLogo /> */}
+      </Suspense>
     </main>
   );
 }

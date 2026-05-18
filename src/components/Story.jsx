@@ -120,7 +120,7 @@ const VertCol = ({ imgs, dir, speed = 7, height }) => {
             overflow: "hidden",
             flexShrink: 0,
           }}>
-            <img src={src} alt="" loading="lazy"
+            <img src={src} alt="" loading="lazy" decoding="async"
               style={{
                 width: "100%",
                 height: "100%",
@@ -128,6 +128,7 @@ const VertCol = ({ imgs, dir, speed = 7, height }) => {
                 display: "block",
                 transform: "translateZ(0) scale(1.16)",
                 backfaceVisibility: "hidden",
+                loading:"lazy",
               }} />
             <div style={{
               ...imageEdgeFade,
@@ -175,15 +176,7 @@ const Story = () => {
   }, []);
 
   useGSAP(() => {
-    // Section fade-in on enter
-    gsap.from(sectionRef.current, {
-      opacity: 0, duration: 1, ease: "power2.out",
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: "top 90%",
-        toggleActions: "play none none reverse",
-      },
-    });
+
 
     // Heading slide up
     gsap.from(headRef.current, {
@@ -335,7 +328,7 @@ const Story = () => {
                 aspectRatio: "3/4",
                 overflow: "hidden",
               }}>
-                <img src={src} alt="" loading="lazy"
+                <img src={src} alt="" loading="lazy" decoding="async"
                   style={{
                     width: "100%",
                     height: "100%",

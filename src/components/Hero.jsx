@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Button from "./Button";
 import VideoPreview from "./VideoPreview";
 import DVDLoader from "./DVDLoader";
+import { assetPath } from "../utils/assetPath";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -56,8 +57,8 @@ const Hero = () => {
       image.src = src;
     };
 
-    preloadImage("/img/noise.png", "noise-image");
-    preloadImage("/img/logo.png", "logo-image");
+    preloadImage(assetPath("img/noise.png"), "noise-image");
+    preloadImage(assetPath("img/logo.png"), "logo-image");
 
     const fallbackTimer = setTimeout(() => {
       setIsHeroReady(true);
@@ -237,7 +238,7 @@ const Hero = () => {
     });
   });
 
-  const getVideoSrc = (index) => `videos/hero-${index}.mp4`;
+  const getVideoSrc = (index) => assetPath(`videos/hero-${index}.mp4`);
 
   return (
     <>
@@ -255,8 +256,9 @@ const Hero = () => {
           className="relative z-10 h-dvh w-screen overflow-hidden rounded-lg bg-blue-75"
         >
           <img
-            src="/img/noise.png"
+            src={assetPath("img/noise.png")}
             alt=""
+            rel="preload"
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 z-[35] size-full object-cover"
             style={{ opacity: 0.85 }}

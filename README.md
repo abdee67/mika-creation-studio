@@ -1,4 +1,4 @@
-# Mikis Creative Studio Software
+# Mika Creation Studio Software
 
 A cinematic service Website for a creative studio offering video production, event coverage, brand development, and Software development services.
 
