@@ -138,6 +138,7 @@ const DVDLoader = ({
             <img
                 src={assetPath("img/noise.png")}
                 alt=""
+                rel="preload"
                 aria-hidden="true"
                 style={{
                     position: "absolute",

@@ -258,6 +258,7 @@ const Hero = () => {
           <img
             src={assetPath("img/noise.png")}
             alt=""
+            rel="preload"
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 z-[35] size-full object-cover"
             style={{ opacity: 0.85 }}

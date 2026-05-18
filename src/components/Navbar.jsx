@@ -80,7 +80,7 @@ const NavBar = () => {
         <nav className="relative flex size-full items-center justify-between p-3 sm:p-4">
           {/* Logo and Product button */}
           <div className="flex min-w-0 items-center gap-3 sm:gap-7">
-            <img src={assetPath("img/logo.png")} alt="logo" className="w-9 shrink-0 sm:w-10" />
+            <img src={assetPath("img/logo.png")} alt="logo" rel="preload" className="w-9 shrink-0 sm:w-10" />
 
             <Button
               id="product-button"
