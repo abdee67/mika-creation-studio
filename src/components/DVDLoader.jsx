@@ -136,7 +136,7 @@ const DVDLoader = ({
             }}
         >
             <img
-                src={assetPath("img/noise.png")}
+                src={assetPath("img/noise.webp")}
                 alt=""
                 rel="preload"
                 aria-hidden="true"
