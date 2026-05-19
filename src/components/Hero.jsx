@@ -14,7 +14,6 @@ gsap.registerPlugin(ScrollTrigger);
 const totalVideos = 4;
 const videos = Array.from({ length: totalVideos }, (_, index) => index + 1);
 const requiredHeroAssets = [
-  "noise-image",
   "logo-image",
   ...videos.map((videoIndex) => `hero-video-${videoIndex}`),
 ];
@@ -57,7 +56,6 @@ const Hero = () => {
       image.src = src;
     };
 
-    preloadImage(assetPath("img/noise.png"), "noise-image");
     preloadImage(assetPath("img/logo.png"), "logo-image");
 
     const fallbackTimer = setTimeout(() => {
@@ -113,8 +111,10 @@ const Hero = () => {
   useGSAP(() => {
     const videoEls = gsap.utils.toArray("[data-hero-slot-video]");
     const getSlots = () => {
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
+      const frame = document.getElementById("video-frame");
+      const frameRect = frame?.getBoundingClientRect();
+      const viewportWidth = frameRect?.width || window.innerWidth;
+      const viewportHeight = frameRect?.height || window.innerHeight;
       const miniWidth = gsap.utils.clamp(110, 320, viewportWidth * 0.24);
       const miniHeight = gsap.utils.clamp(82, 230, viewportHeight * 0.22);
       const edgeX = gsap.utils.clamp(12, 72, viewportWidth * 0.045);
@@ -128,8 +128,8 @@ const Hero = () => {
         center: {
           x: 0,
           y: 0,
-          width: viewportWidth,
-          height: viewportHeight,
+          width: "100%",
+          height: "100%",
           borderRadius: 0,
           autoAlpha: 1,
           scale: 1,
@@ -250,20 +250,14 @@ const Hero = () => {
         />
       )}
 
-      <div id="hero" className="relative h-dvh w-full overflow-x-hidden">
+      <div
+        id="hero"
+        className="relative h-dvh min-h-screen w-full overflow-x-hidden bg-black"
+      >
         <div
           id="video-frame"
-          className="relative z-10 h-dvh w-screen overflow-hidden rounded-lg bg-blue-75"
+          className="relative z-10 h-dvh min-h-screen w-screen overflow-hidden rounded-none bg-black"
         >
-          <img
-            src={assetPath("img/noise.png")}
-            alt=""
-            rel="preload"
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 z-[35] size-full object-cover"
-            style={{ opacity: 0.85 }}
-          />
-
           {videos.map((videoIndex) => (
             <video
               key={videoIndex}
@@ -272,12 +266,12 @@ const Hero = () => {
               loop
               muted
               playsInline
-              preload="auto"
+              preload="metadata"
               onCanPlay={() => markHeroAssetReady(`hero-video-${videoIndex}`)}
               onLoadedData={() => markHeroAssetReady(`hero-video-${videoIndex}`)}
               onError={() => markHeroAssetReady(`hero-video-${videoIndex}`)}
               data-hero-slot-video
-              className="absolute left-0 top-0 object-cover object-center"
+              className="absolute left-0 top-0 size-full object-cover object-center"
             />
           ))}
 
@@ -313,14 +307,14 @@ const Hero = () => {
 
           {/* Bottom-right title (inside frame) */}
           <h1 className="special-font hero-heading absolute bottom-5 right-5 z-40 text-blue-75">
-            ST<b>U</b>DIO
+            CRE<b>A</b>TI<b>ON</b>
           </h1>
 
           {/* Hero text content */}
           <div id="hero-content" className="absolute left-0 top-0 z-40 size-full">
             <div className="mt-20 max-w-[min(92vw,38rem)] px-4 sm:mt-24 sm:px-10">
               <h1 className="special-font hero-heading text-blue-100">
-                redefi<b>n</b>e
+                mik<b>a</b>
               </h1>
               <p className="mb-5 max-w-60 font-robert-regular text-sm text-blue-100 sm:max-w-64 sm:text-base">
                 Video production <br /> Events, brands & Softwares
