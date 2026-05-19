@@ -50,7 +50,7 @@ const Dot = () => (
 );
 
 // ── Text marquee stripe ────────────────────────────────────────────────────
-const TextStripe = ({ dir = "rtl", speed = 7 }) => {
+const TextStripe = ({ dir = "rtl", speed = 15 }) => {
   const items = [...WORDS, ...WORDS, ...WORDS];
   return (
     <div style={{ overflow: "hidden", width: "100%" }}>
@@ -249,7 +249,7 @@ const Story = () => {
           borderBottom: "1px solid rgba(255,255,255,0.08)",
           padding: "24px 0", overflow: "hidden",
         }}>
-          <TextStripe dir="rtl" speed={7} />
+          <TextStripe dir="rtl" speed={15} />
         </div>
 
         {/* HEADER */}
@@ -361,7 +361,7 @@ const Story = () => {
           borderBottom: "1px solid rgba(255,255,255,0.08)",
           padding: "24px 0", overflow: "hidden", marginTop: 0,
         }}>
-          <TextStripe dir="ltr" speed={7} />
+          <TextStripe dir="ltr" speed={15} />
         </div>
 
       </section>
