@@ -218,6 +218,7 @@ const HorizontalPullWords = () => {
               data-feature-pull-letter
               aria-hidden="true"
               className="inline-block"
+              style={{ willChange: "transform" }}
             >
               {letter === " " ? "\u00A0" : letter}
             </span>
