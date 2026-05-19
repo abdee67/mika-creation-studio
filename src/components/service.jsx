@@ -57,14 +57,16 @@ const CARDS = [
 ];
 
 const TOTAL      = CARDS.length;
-const PEEK       = 30;
+const PEEK       = 20; // Reduced to fit small screens
 const SCALE_STEP = 0.04;
 
 // ── Mobile carta helpers (unchanged) ──────────────────────────────────────
 function stackPos(pos) {
+  const centerOffset = ((TOTAL - 1) * PEEK) / 2;
   return {
     xPercent:-50, yPercent:-50,
-    y: -pos * PEEK, scale: 1 - pos * SCALE_STEP,
+    y: -pos * PEEK + centerOffset,
+    scale: 1 - pos * SCALE_STEP,
     zIndex: TOTAL - pos, x:0, rotation:0,
   };
 }
@@ -74,19 +76,19 @@ function setDeck(cards, order) {
 function throwToBack(cards, order, done) {
   const fi = order[0], front = cards[fi], bp = stackPos(TOTAL-1);
   const tl = gsap.timeline({ onComplete:done });
-  tl.to(front, { x:180, y:-320, rotation:22, scale:0.68, duration:0.38, ease:"power2.in" });
-  order.slice(1).forEach((ci,i) => tl.to(cards[ci], { ...stackPos(i), duration:0.42, ease:"power2.out" }, 0));
-  tl.set(front, { xPercent:-50, yPercent:-50, x:0, y:bp.y-24, scale:bp.scale, zIndex:bp.zIndex, rotation:-6 });
-  tl.to(front, { y:bp.y, rotation:0, duration:0.24, ease:"back.out(2)" });
+  tl.to(front, { x:160, y:-280, rotation:15, scale:0.75, duration:0.45, ease:"power2.inOut" });
+  order.slice(1).forEach((ci,i) => tl.to(cards[ci], { ...stackPos(i), duration:0.5, ease:"power2.out" }, 0));
+  tl.set(front, { xPercent:-50, yPercent:-50, x:0, y:bp.y-20, scale:bp.scale, zIndex:bp.zIndex, rotation:-4 });
+  tl.to(front, { y:bp.y, rotation:0, duration:0.3, ease:"back.out(1.5)" });
   order.push(order.shift());
 }
 function throwToFront(cards, order, done) {
   const bi = order[TOTAL-1], back = cards[bi], fp = stackPos(0);
   const tl = gsap.timeline({ onComplete:done });
-  tl.to(back, { x:-180, y:-320, rotation:-22, scale:0.68, duration:0.38, ease:"power2.in" });
-  order.slice(0,-1).forEach((ci,i) => tl.to(cards[ci], { ...stackPos(i+1), duration:0.42, ease:"power2.out" }, 0));
-  tl.set(back, { xPercent:-50, yPercent:-50, x:0, y:fp.y+30, scale:fp.scale, zIndex:fp.zIndex, rotation:8 });
-  tl.to(back, { y:fp.y, rotation:0, duration:0.26, ease:"back.out(1.8)" });
+  tl.to(back, { x:-160, y:-280, rotation:-15, scale:0.75, duration:0.45, ease:"power2.inOut" });
+  order.slice(0,-1).forEach((ci,i) => tl.to(cards[ci], { ...stackPos(i+1), duration:0.5, ease:"power2.out" }, 0));
+  tl.set(back, { xPercent:-50, yPercent:-50, x:0, y:fp.y+20, scale:fp.scale, zIndex:fp.zIndex, rotation:6 });
+  tl.to(back, { y:fp.y, rotation:0, duration:0.3, ease:"back.out(1.5)" });
   order.unshift(order.pop());
 }
 
@@ -241,8 +243,8 @@ const ServiceCards = () => {
         id:         "carta-pin",
         snap: {
           snapTo:   1 / TOTAL,
-          duration: { min:0.2, max:0.45 },
-          ease:     "power1.inOut",
+          duration: { min:0.3, max:0.6 },
+          ease:     "power2.inOut",
         },
         onUpdate(self) {
           const currentStep = Math.round(self.progress * TOTAL);
@@ -269,16 +271,19 @@ const ServiceCards = () => {
     "shrink-0 px-[clamp(24px,6vw,100px)] min-[769px]:hidden max-[768px]:px-5 max-[768px]:pb-7 max-[768px]:pt-12 max-[380px]:px-4 max-[380px]:pb-6 max-[380px]:pt-10";
 
   const wrapperClass =
-    "relative w-full min-[769px]:h-dvh min-[769px]:max-w-none min-[769px]:overflow-hidden max-[768px]:box-border max-[768px]:flex max-[768px]:min-h-[min(560px,68dvh)] max-[768px]:flex-1 max-[768px]:items-center max-[768px]:justify-center max-[768px]:overflow-visible max-[768px]:pb-12 max-[768px]:pt-[166px] max-[380px]:min-h-[min(580px,74dvh)] max-[380px]:pb-[30px] max-[380px]:pt-[194px]";
+    "relative w-full min-[769px]:h-dvh min-[769px]:max-w-none min-[769px]:overflow-hidden max-[768px]:box-border max-[768px]:flex max-[768px]:flex-col max-[768px]:min-h-[500px] max-[768px]:flex-1 max-[768px]:overflow-visible max-[768px]:pb-8 max-[380px]:min-h-[440px]";
 
   const hintClass =
-    "relative z-30 hidden items-center justify-center gap-2 bg-gradient-to-b from-black via-black/95 to-transparent px-4 pb-8 pt-4 font-mono text-[9px] uppercase tracking-[0.35em] text-white/45 max-[768px]:flex max-[380px]:pb-[46px] max-[380px]:pt-2";
+    "relative z-30 hidden w-full items-center justify-center gap-4 px-4 py-4 font-mono text-[10px] uppercase tracking-[0.35em] text-white/60 max-[768px]:flex shrink-0";
 
   const hintLineClass =
-    "h-7 w-px bg-gradient-to-b from-white/35 to-transparent";
+    "h-px flex-1 max-w-[40px] bg-white/35";
 
   const progressClass =
     "pointer-events-none absolute bottom-[clamp(20px,3vh,36px)] left-1/2 z-[1000] hidden -translate-x-1/2 gap-2.5 min-[769px]:flex";
+
+  const deckContainerClass =
+    "relative w-full flex-1 min-[769px]:h-full";
 
   const cardClass =
     "absolute box-border overflow-hidden will-change-transform min-[769px]:left-0 min-[769px]:top-0 min-[769px]:grid min-[769px]:h-full min-[769px]:w-full min-[769px]:grid-rows-[auto_1fr] min-[769px]:rounded-none min-[769px]:shadow-none max-[768px]:left-1/2 max-[768px]:top-1/2 max-[768px]:flex max-[768px]:h-[min(62dvh,430px)] max-[768px]:min-h-[360px] max-[768px]:w-[min(84vw,320px)] max-[768px]:-translate-x-1/2 max-[768px]:-translate-y-1/2 max-[768px]:flex-col max-[768px]:rounded-[14px] max-[768px]:shadow-[0_16px_40px_rgba(0,0,0,0.5)] max-[380px]:h-[min(64dvh,400px)] max-[380px]:min-h-[330px] max-[380px]:w-[min(88vw,296px)]";
@@ -324,15 +329,15 @@ const ServiceCards = () => {
         </h2>
       </div>
 
-      {/* Mobile scroll hint */}
-      <div data-svc-hint className={hintClass}>
-        <div className={hintLineClass} />
-        Scroll to explore
-        <div className={hintLineClass} />
-      </div>
-
       {/* Cards wrapper */}
       <div className={wrapperClass} ref={wrapperRef}>
+
+        {/* Mobile scroll hint */}
+        <div data-svc-hint className={hintClass}>
+          <div className={hintLineClass} />
+          Scroll to explore
+          <div className={hintLineClass} />
+        </div>
 
         {/* Desktop progress dots */}
         <div className={progressClass}>
@@ -346,40 +351,42 @@ const ServiceCards = () => {
           ))}
         </div>
 
-        {/* Cards */}
-        {CARDS.map((c) => (
-          <div
-            key={c.id}
-            data-svc-card
-            className={cardClass}
-            style={{ background: c.bg, color: c.color }}
-          >
-            <div className={peekClass}>
-              <span className="hidden font-mono text-[10px] uppercase tracking-[0.45em] opacity-40 min-[769px]:block">
-                ◈ What We Do
-              </span>
-              <span className="text-2xl leading-none min-[769px]:text-[clamp(22px,2.5vw,32px)]">
-                {c.icon}
-              </span>
-              <span className="font-mono text-[10px] uppercase tracking-[0.35em] opacity-45 min-[769px]:text-[clamp(10px,1vw,13px)]">
-                {c.num}
-              </span>
-            </div>
+        <div className={deckContainerClass}>
+          {/* Cards */}
+          {CARDS.map((c) => (
+            <div
+              key={c.id}
+              data-svc-card
+              className={cardClass}
+              style={{ background: c.bg, color: c.color }}
+            >
+              <div className={peekClass}>
+                <span className="hidden font-mono text-[10px] uppercase tracking-[0.45em] opacity-40 min-[769px]:block">
+                  ◈ What We Do
+                </span>
+                <span className="text-2xl leading-none min-[769px]:text-[clamp(22px,2.5vw,32px)]">
+                  {c.icon}
+                </span>
+                <span className="font-mono text-[10px] uppercase tracking-[0.35em] opacity-45 min-[769px]:text-[clamp(10px,1vw,13px)]">
+                  {c.num}
+                </span>
+              </div>
 
-            <div className={bodyClass}>
-              <h3 className={titleClass} style={headlineFont}>{c.title}</h3>
-              <hr className="m-0 border-0 border-t border-white/20 min-[769px]:mb-[clamp(16px,2.5vh,28px)]" />
-              <ul className={listClass}>
-                {c.services.map((s) => (
-                  <li key={s} className={listItemClass}>
-                    <span className="size-1 shrink-0 rounded-full bg-current opacity-50" />
-                    {s}
-                  </li>
-                ))}
-              </ul>
+              <div className={bodyClass}>
+                <h3 className={titleClass} style={headlineFont}>{c.title}</h3>
+                <hr className="m-0 border-0 border-t border-white/20 min-[769px]:mb-[clamp(16px,2.5vh,28px)]" />
+                <ul className={listClass}>
+                  {c.services.map((s) => (
+                    <li key={s} className={listItemClass}>
+                      <span className="size-1 shrink-0 rounded-full bg-current opacity-50" />
+                      {s}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );
