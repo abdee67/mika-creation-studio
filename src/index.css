@@ -73,6 +73,11 @@ body {
     font-feature-settings: "ss01" on;
   }
 
+  [data-hero-slot-video] {
+    object-fit: cover !important;
+    object-position: center !important;
+  }
+
   .hero-heading {
     @apply font-zentry text-5xl font-black uppercase sm:right-10 sm:text-7xl md:text-9xl lg:text-[12rem];
   }
