@@ -90,9 +90,9 @@ const Contact = () => {
     >
       {/* ── Decorative background ── */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <img src={assetPath("img/noise.png")} alt="" loading="lazy" decoding="async" aria-hidden="true"
+        <img src={assetPath("img/noise.webp")} alt="" loading="lazy" decoding="async" aria-hidden="true"
           className="contact-noise-x contact-noise-x-a" />
-        <img src={assetPath("img/noise.png")} alt="" loading="lazy" decoding="async" aria-hidden="true"
+        <img src={assetPath("img/noise.webp")} alt="" loading="lazy" decoding="async" aria-hidden="true"
           className="contact-noise-x contact-noise-x-b" />
         <div className="contact-bg-title-wrap absolute left-1/2 top-[53%] z-[1] w-[92vw] -translate-x-1/2 -translate-y-1/2 md:top-1/2 md:w-[116vw]">
           <h2
@@ -153,18 +153,6 @@ const Contact = () => {
               </Field>
             </div>
 
-            <div className="mt-6 sm:mt-8">
-              <Field label="Service">
-                <select name="service" className={`${fieldClass} cursor-pointer`} defaultValue="">
-                  <option value="" disabled className="bg-black text-blue-50/40">What do you need?</option>
-                  {["Film & Video Production","Photography","Brand Identity",
-                    "Social Media","Activations & Events","Motion & Post",
-                    "Other / Not sure yet"].map(s => (
-                    <option key={s} value={s} className="bg-black text-blue-50">{s}</option>
-                  ))}
-                </select>
-              </Field>
-            </div>
 
             <div className="mt-6 sm:mt-8">
               <Field label="Message">
