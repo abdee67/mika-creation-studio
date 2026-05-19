@@ -126,47 +126,27 @@ const Hero = () => {
 
       return {
         center: {
-          x: 0,
-          y: 0,
-          width: "100%",
-          height: "100%",
-          borderRadius: 0,
+          clipPath: "inset(0px 0px 0px 0px round 0px)",
           autoAlpha: 1,
           scale: 1,
         },
         topRight: {
-          x: viewportWidth - miniWidth - edgeX,
-          y: topY,
-          width: miniWidth,
-          height: miniHeight,
-          borderRadius: 8,
+          clipPath: `inset(${topY}px ${edgeX}px ${viewportHeight - topY - miniHeight}px ${viewportWidth - edgeX - miniWidth}px round 8px)`,
           autoAlpha: 1,
           scale: 1,
         },
         bottomLeft: {
-          x: edgeX,
-          y: bottomY,
-          width: miniWidth,
-          height: miniHeight,
-          borderRadius: 8,
+          clipPath: `inset(${bottomY}px ${viewportWidth - edgeX - miniWidth}px ${viewportHeight - bottomY - miniHeight}px ${edgeX}px round 8px)`,
           autoAlpha: 1,
           scale: 1,
         },
         topLeft: {
-          x: edgeX,
-          y: topY,
-          width: miniWidth,
-          height: miniHeight,
-          borderRadius: 8,
+          clipPath: `inset(${topY}px ${viewportWidth - edgeX - miniWidth}px ${viewportHeight - topY - miniHeight}px ${edgeX}px round 8px)`,
           autoAlpha: 1,
           scale: 1,
         },
         bottomRight: {
-          x: viewportWidth - miniWidth - edgeX,
-          y: bottomY,
-          width: miniWidth,
-          height: miniHeight,
-          borderRadius: 8,
+          clipPath: `inset(${bottomY}px ${edgeX}px ${viewportHeight - bottomY - miniHeight}px ${viewportWidth - edgeX - miniWidth}px round 8px)`,
           autoAlpha: 1,
           scale: 1,
         },
@@ -272,6 +252,7 @@ const Hero = () => {
               onError={() => markHeroAssetReady(`hero-video-${videoIndex}`)}
               data-hero-slot-video
               className="absolute left-0 top-0 size-full object-cover object-center"
+              style={{ willChange: "clip-path" }}
             />
           ))}
 

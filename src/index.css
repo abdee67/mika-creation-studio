@@ -87,7 +87,14 @@ body {
   }
 
   .about-image {
-    @apply absolute left-1/2 top-0 z-20 h-[60vh] w-96 origin-center -translate-x-1/2 overflow-hidden rounded-3xl md:w-[30vw];
+    @apply absolute left-0 top-0 z-20 size-full overflow-hidden;
+    clip-path: inset(0 calc(50vw - 192px) 40vh calc(50vw - 192px) round 1.5rem);
+    will-change: clip-path;
+  }
+  @media (min-width: 768px) {
+    .about-image {
+      clip-path: inset(0 35vw 40vh 35vw round 1.5rem);
+    }
   }
 
   .animated-title {
