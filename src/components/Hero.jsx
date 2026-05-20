@@ -65,6 +65,17 @@ const Hero = () => {
     return () => clearTimeout(fallbackTimer);
   }, [markHeroAssetReady]);
 
+  useEffect(() => {
+    if (!showLoader) {
+      const videoEls = document.querySelectorAll("[data-hero-slot-video]");
+      videoEls.forEach((video) => {
+        video.play().catch((err) => {
+          console.log("Video playback failed or was interrupted:", err);
+        });
+      });
+    }
+  }, [showLoader]);
+
   const handleMiniVdClick = () => {
     const nextIndex = getNextIndex(activeIndexRef.current);
     const heroTrigger = ScrollTrigger.getById("hero-video-sequence");
@@ -242,7 +253,6 @@ const Hero = () => {
             <video
               key={videoIndex}
               src={getVideoSrc(videoIndex)}
-              autoPlay
               loop
               muted
               playsInline
