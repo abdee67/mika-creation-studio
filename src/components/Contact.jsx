@@ -76,10 +76,38 @@ const SocialPill = ({ icon: Icon, label, href, color }) => (
 const Contact = () => {
   const [status, setStatus] = useState("idle");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus("sending");
-    setTimeout(() => setStatus("sent"), 1400);
+
+    const formData = new FormData(e.target);
+    const data = {
+      fullName: formData.get("fullName"),
+      email: formData.get("email"),
+      phone: formData.get("phone"),
+      service: formData.get("service"),
+      message: formData.get("message"),
+    };
+
+    try {
+      const response = await fetch("/api/send_telegram", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        setStatus("sent");
+        e.target.reset();
+      } else {
+        setStatus("error");
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus("error");
+    }
   };
 
   return (
@@ -152,7 +180,18 @@ const Contact = () => {
                   placeholder="+251 900 000 000" className={fieldClass} />
               </Field>
             </div>
-
+<div className="mt-6 sm:mt-8">
+              <Field label="Service">
+                <select name="service" className={`${fieldClass} cursor-pointer`} defaultValue="">
+                  <option value="" disabled className="bg-black text-blue-50/40">What do you need?</option>
+                  {["Film & Video Production","Photography","Brand Identity",
+                    "Social Media","Activations & Events","Motion & Post",
+                    "Other / Not sure yet"].map(s => (
+                    <option key={s} value={s} className="bg-black text-blue-50">{s}</option>
+                  ))}
+                </select>
+              </Field>
+            </div>
 
             <div className="mt-6 sm:mt-8">
               <Field label="Message">
@@ -177,6 +216,11 @@ const Contact = () => {
               {status === "sent" && (
                 <p className="font-general text-[10px] uppercase tracking-[0.3em] text-yellow-300">
                   We&apos;ll get back to you soon.
+                </p>
+              )}
+              {status === "error" && (
+                <p className="font-general text-[10px] uppercase tracking-[0.3em] text-red-500">
+                  Failed to send. Please try again.
                 </p>
               )}
             </div>
