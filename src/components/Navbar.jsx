@@ -10,10 +10,10 @@ import { assetPath } from "../utils/assetPath";
 
 const navItems = [
   { label: "HOME", href: "#hero" },
-  { label: "WORK", href: "#about" },
-  { label: "SERVICES", href: "#services" },
-  { label: "STUDIO", href: "#story" },
-  { label: "CONTACT", href: "#contact" },
+  { label: "WHAT WE DID", href: "#about" },
+  { label: "WHAT WE DO", href: "#services" },
+  { label: "WHO ARE WE", href: "#story" },
+  { label: "LETS TALK", href: "#contact" },
 ];
 
 const NavBar = () => {
@@ -80,11 +80,12 @@ const NavBar = () => {
         <nav className="relative flex size-full items-center justify-between p-3 sm:p-4">
           {/* Logo and Product button */}
           <div className="flex min-w-0 items-center gap-3 sm:gap-7">
-            <img src={assetPath("img/logo.png")} alt="logo" rel="preload" className="w-9 shrink-0 sm:w-10" />
+            <a href="#hero"><img src={assetPath("img/logo.png")} alt="logo" rel="preload" className="w-9 shrink-0 sm:w-10" /></a>
 
             <Button
               id="product-button"
               title="Services"
+              href="#services"
               rightIcon={<TiLocationArrow />}
               containerClass="hidden items-center justify-center gap-1 bg-blue-50 md:flex"
             />
