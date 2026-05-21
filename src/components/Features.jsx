@@ -111,14 +111,11 @@ const HorizontalPullWords = () => {
         return;
       }
 
-      const entranceDistance = Math.max(window.innerHeight * 0.9, 520);
-      const pinnedDistance = Math.max(window.innerWidth * 1.55, 1250);
-
       const scrollTween = gsap.timeline({
         scrollTrigger: {
           trigger: section,
-          start: "top bottom",
-          end: () => `+=${entranceDistance + pinnedDistance}`,
+          start: "top 88%",
+          end: "bottom 12%",
           scrub: 1,
           invalidateOnRefresh: true,
         },
@@ -127,32 +124,22 @@ const HorizontalPullWords = () => {
       scrollTween
         .fromTo(
           track,
-          { x: () => window.innerWidth * 0.95 },
+          { x: () => window.innerWidth * 0.78 },
           {
-            x: () => window.innerWidth * 0.08,
-            duration: entranceDistance,
+            x: () => window.innerWidth * 0.06,
+            duration: 0.45,
             ease: "none",
           }
         )
         .to(track, {
-          x: () => -(track.scrollWidth - window.innerWidth * 0.92),
-          duration: pinnedDistance,
+          x: () => -(track.scrollWidth - window.innerWidth * 0.96),
+          duration: 0.55,
           ease: "none",
         });
 
-      ScrollTrigger.create({
-        trigger: section,
-        start: "top top",
-        end: () => `+=${pinnedDistance}`,
-        pin: true,
-        pinSpacing: true,
-        anticipatePin: 1,
-        invalidateOnRefresh: true,
-      });
-
       letters.forEach((letter, index) => {
-        const yStart = gsap.utils.wrap([120, -150, 95, -85], index);
-        const rotationStart = gsap.utils.wrap([-16, 12, -9, 18], index);
+        const yStart = gsap.utils.wrap([34, -42, 26, -30], index);
+        const rotationStart = gsap.utils.wrap([-4, 3, -2, 4], index);
 
         gsap.fromTo(
           letter,
@@ -163,7 +150,7 @@ const HorizontalPullWords = () => {
           {
             yPercent: 0,
             rotation: 0,
-            ease: "elastic.out(1.15, 0.9)",
+            ease: "elastic.out(2.15, 1.9)",
             scrollTrigger: {
               trigger: letter,
               containerAnimation: scrollTween,
@@ -182,17 +169,17 @@ const HorizontalPullWords = () => {
   return (
     <section
       ref={sectionRef}
-      className="relative h-[82svh] w-full overflow-hidden bg-black text-blue-50 sm:h-screen"
+      className="relative h-[34svh] min-h-56 w-full overflow-hidden bg-black text-blue-50 sm:h-[40vh] md:h-[46vh]"
       aria-label={pullHeadline}
     >
       <div
         ref={trackRef}
-        className="absolute left-0 top-1/2 flex w-max -translate-y-1/2 items-center gap-[clamp(1.5rem,5vw,5rem)] whitespace-nowrap px-[22vw] will-change-transform"
+        className="absolute left-0 top-1/2 flex w-max -translate-y-1/2 items-center gap-[clamp(1rem,3vw,3rem)] whitespace-nowrap px-[14vw] will-change-transform"
       >
         <svg
           viewBox="0 0 386 127"
           fill="none"
-          className="hidden w-[clamp(11rem,24vw,24rem)] shrink-0 text-yellow-300/80 sm:block"
+          className="hidden w-[clamp(8rem,16vw,16rem)] shrink-0 text-yellow-300/80 sm:block"
           aria-hidden="true"
         >
           <path
@@ -211,7 +198,7 @@ const HorizontalPullWords = () => {
           />
         </svg>
 
-        <h2 className="special-font font-zentry text-[clamp(4.6rem,15vw,13rem)] font-black lowercase leading-[0.82] tracking-[-0.04em] text-white">
+        <h2 className="special-font font-zentry text-[clamp(3.2rem,10vw,8.6rem)] font-black uppercase leading-[0.9] tracking-normal text-white sm:tracking-[0.02em]">
           {Array.from(pullHeadline).map((letter, index) => (
             <span
               key={`${letter}-${index}`}
@@ -228,7 +215,7 @@ const HorizontalPullWords = () => {
         <svg
           viewBox="0 0 140 127"
           fill="none"
-          className="w-[clamp(5rem,11vw,9rem)] shrink-0 text-yellow-300/80"
+          className="w-[clamp(3.5rem,7vw,6rem)] shrink-0 text-yellow-300/80"
           aria-hidden="true"
         >
           <path
