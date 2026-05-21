@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { assetPath } from "../utils/assetPath";
 
 const COLORS = [
     "#FF4D4D", // red
@@ -10,6 +9,10 @@ const COLORS = [
     "#FF9F43", // orange
     "#00FFDD", // cyan
 ];
+
+const LOADER_BACKGROUND = "#2F2C30";
+const getFlashBackground = (color) =>
+    `linear-gradient(${color}22, ${color}22), ${LOADER_BACKGROUND}`;
 
 const DVDLoader = ({
     onDone,
@@ -74,10 +77,12 @@ const DVDLoader = ({
                 if (hitCorner && wrapperRef.current) {
                     wrapperRef.current.style.transition =
                         "background 0.05s, opacity 0.5s ease";
-                    wrapperRef.current.style.background = COLORS[colorIdxRef.current] + "22";
+                    wrapperRef.current.style.background = getFlashBackground(
+                        COLORS[colorIdxRef.current]
+                    );
                     setTimeout(() => {
                         if (wrapperRef.current)
-                            wrapperRef.current.style.background = "#000";
+                            wrapperRef.current.style.background = LOADER_BACKGROUND;
                     }, 120);
                 }
             }
@@ -129,43 +134,26 @@ const DVDLoader = ({
                 position: "fixed",
                 inset: 0,
                 zIndex: 200,
-                background: "#000",
+                background: LOADER_BACKGROUND,
                 opacity: visible ? 1 : 0,
                 transition: "opacity 0.5s ease",
                 overflow: "hidden",
             }}
         >
-            <img
-                src={assetPath("img/noise.webp")}
-                alt=""
-                rel="preload"
-                aria-hidden="true"
-                style={{
-                    position: "absolute",
-                    inset: 0,
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    opacity: 0.85,
-                    pointerEvents: "none",
-                    zIndex: 1,
-                }}
-            />
-
             {/* Scanline texture */}
             <div
                 style={{
                     position: "absolute",
                     inset: 0,
                     backgroundImage:
-                        "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.015) 2px, rgba(255,255,255,0.015) 4px)",
+                        "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(16, 16, 16, 0.91) 2px, rgba(12, 12, 11, 1) 4px)",
                     pointerEvents: "none",
-                    zIndex: 2,
+                    zIndex: 1,
                 }}
             />
 
             {/* Bouncing logo (oval shape)  */}
-            <div ref={containerRef} style={{ position: "absolute", inset: 0, zIndex: 3 }}>
+            <div ref={containerRef} style={{ position: "absolute", inset: 0, zIndex: 2 }}>
                 <div
                     ref={logoRef}
                     style={{
@@ -182,7 +170,7 @@ const DVDLoader = ({
                             height: "clamp(86px, 10vw, 150px)",
                             padding: "clamp(14px, 2vw, 28px)",
                             border: `3px solid ${color}`,
-                            borderRadius: "999px",
+                            borderRadius: "1000px",
                             transition: "border-color 0.1s, color 0.1s",
                             display: "flex",
                             flexDirection: "column",
@@ -190,11 +178,11 @@ const DVDLoader = ({
                             alignItems: "center",
                             gap: "clamp(3px, 0.5vw, 8px)",
                             background:
-                                "radial-gradient(ellipse at 50% 30%, rgba(255,255,255,0.12), transparent 58%), rgba(0,0,0,0.3)",
+                                "radial-gradient(ellipse at 50% 30%, rgba(0, 0, 0, 1), transparent 58%), rgba(0, 0, 0, 1)",
                             boxShadow: `inset 0 0 22px ${color}22`,
                         }}
                     >
-                        {/* Main logo text — replace with your actual logo/name */}
+                        {/* Main logo text */}
                         <span
                             style={{
                                 fontSize: "clamp(42px, 7vw, 92px)",
@@ -207,7 +195,7 @@ const DVDLoader = ({
                                 userSelect: "none",
                             }}
                         >
-                            MCS
+                            MC
                         </span>
                         <span
                             style={{
@@ -264,15 +252,15 @@ const DVDLoader = ({
                     left: "50%",
                     transform: "translateX(-50%)",
                     color: "rgba(255,255,255,0.15)",
-                    fontSize: "9px",
-                    letterSpacing: "0.4em",
+                    fontSize: "29px",
+                    letterSpacing: "0.2em",
                     textTransform: "uppercase",
                     fontFamily: "monospace",
                     zIndex: 4,
                     userSelect: "none",
                 }}
             >
-                Loading…
+                <h1>Lo<b>a</b><b>d</b><b>i</b><b>n</b><b>g</b><b>...</b></h1>
             </div>
         </div>
     );
