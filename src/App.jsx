@@ -9,6 +9,8 @@ const Features = lazy(() => import("./components/Features"));
 const Story = lazy(() => import("./components/Story"));
 const Contact = lazy(() => import("./components/Contact"));
 const Services = lazy(() => import("./components/service"));
+const Footer = lazy(() => import("./components/Footer"));
+const FinalFooterLogo = lazy(() => import("./components/final_footer_logo"));
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -44,7 +46,8 @@ function App() {
         <Story />
         <Services />
         <Contact />
-        {/* <FinalFooterLogo /> */}
+        <Footer />
+        <FinalFooterLogo />
       </Suspense>
     </main>
   );
