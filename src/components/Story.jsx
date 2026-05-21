@@ -279,7 +279,7 @@ const Story = () => {
               maxWidth: "440px", fontSize: "clamp(13px,1.3vw,16px)", lineHeight: 1.85,
               color: "rgba(255,255,255,0.45)", fontFamily: "Georgia,serif", fontStyle: "italic",
             }}>
-              We are a collective of rebels — storytellers, creators, and
+              We are a collective of storytellers, creators, and
               visionaries who refuse to follow the expected path. Every frame we
               capture is a declaration. Every project we touch becomes a statement.
               We don&apos;t make content. We make culture.
