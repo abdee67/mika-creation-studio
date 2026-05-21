@@ -313,6 +313,7 @@ const Hero = () => {
               <Button
                 id="watch-trailer"
                 title="Start a project"
+                href="#contact"
                 leftIcon={<TiLocationArrow />}
                 containerClass="bg-yellow-300 flex-center gap-1"
               />
