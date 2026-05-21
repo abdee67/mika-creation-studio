@@ -114,17 +114,17 @@ const ServiceCards = () => {
       let animating  = false;
 
       // Initial positions:
-      //   card 0 → visible at x:0%, z:2
-      //   cards 1-5 → off-screen right at x:100%, z:1
       cards.forEach((card, i) => {
         gsap.set(card, {
-          x: 0,
-          xPercent: i === 0 ? 0 : 100,
+          xPercent: 0,
           yPercent: 0,
+          clipPath: i === 0 ? "inset(0% 0% 0% 0% round 0px)" : "inset(12% -10% 12% 100% round 24px)",
           scale: 1,
-          rotation: 0,
+          opacity: 1,
           zIndex: i === 0 ? 2 : 1,
+          transformOrigin: "center center",
         });
+        card.style.willChange = "clip-path, transform, opacity";
       });
 
       // ── Progress dots ──────────────────────────────────────────────────
@@ -134,7 +134,8 @@ const ServiceCards = () => {
           gsap.to(dot, {
             scale:   i === step ? 1.6 : 1,
             opacity: i === step ? 1 : 0.28,
-            duration: 0.3,
+            duration: 0.4,
+            ease: "power2.out"
           });
         });
       };
@@ -147,36 +148,65 @@ const ServiceCards = () => {
         animating = true;
         const { type, idx } = queue.shift();
         const card = cards[idx];
+        const prevCard = cards[idx - 1];
 
         if (type === "in") {
-          // Slide card in from right, give it a higher z so it covers
           gsap.set(card, { zIndex: TOTAL + 10 });
-          gsap.fromTo(card,
-            { xPercent: 100 },
+          const tl = gsap.timeline({
+            onComplete: () => {
+              gsap.set(card, { zIndex: idx + 2 }); // settle above cards below it
+              refreshDots(idx);
+              runNext();
+            },
+          });
+
+          // Wipe new card in from right using clip-path
+          tl.fromTo(card,
+            { clipPath: "inset(12% -10% 12% 100% round 24px)" },
             {
-              xPercent: 0,
-              duration: 0.7,
-              ease: "power2.inOut",
-              onComplete: () => {
-                gsap.set(card, { zIndex: idx + 2 }); // settle above cards below it
-                refreshDots(idx);
-                runNext();
-              },
-            }
+              clipPath: "inset(0% 0% 0% 0% round 0px)",
+              duration: 1.0,
+              ease: "power4.inOut",
+            },
+            0
           );
+
+          // Push back the previous card for 3D depth
+          if (prevCard) {
+            tl.to(prevCard, {
+              scale: 0.88,
+              opacity: 0.25,
+              duration: 1.0,
+              ease: "power4.inOut",
+            }, 0);
+          }
         } else {
-          // Slide card back out to right, revealing the card beneath
+          // Slide out
           gsap.set(card, { zIndex: TOTAL + 10 });
-          gsap.to(card, {
-            xPercent: 100,
-            duration: 0.65,
-            ease: "power2.inOut",
+          const tl = gsap.timeline({
             onComplete: () => {
               gsap.set(card, { zIndex: 1 });
               refreshDots(idx - 1);
               runNext();
             },
           });
+
+          // Wipe current card out to the right
+          tl.to(card, {
+            clipPath: "inset(12% -10% 12% 100% round 24px)",
+            duration: 0.9,
+            ease: "power4.inOut",
+          }, 0);
+
+          // Restore the previous card
+          if (prevCard) {
+            tl.to(prevCard, {
+              scale: 1,
+              opacity: 1,
+              duration: 0.9,
+              ease: "power4.inOut",
+            }, 0);
+          }
         }
       };
 
