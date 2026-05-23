@@ -167,7 +167,7 @@ const Contact = () => {
               )}
             </div>
 
-            <p className="mt-4 font-robert-regular text-[10px] leading-5 text-blue-50/30 sm:mt-5 sm:text-[11px]">
+            <p className="mt-4 font-robert-regular text-[10px] leading-5 text-blue-40/30 sm:mt-5 sm:text-[11px]">
               By submitting you agree to be contacted about your project. No spam, ever.
             </p>
           </form>
