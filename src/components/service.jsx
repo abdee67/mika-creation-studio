@@ -19,6 +19,7 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { assetPath } from "../utils/assetPath";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -26,32 +27,32 @@ gsap.registerPlugin(ScrollTrigger);
 const CARDS = [
   {
     id: "film",    title: "Film & Video",     icon: "🎬", num: "01",
-    bg: "#c8a951", color: "#000",
+    img: "img/video.webp", color: "#fff",
     services: ["Campaign Film","Branded Content","Social Content","Documentary","Motion Graphics"],
   },
   {
     id: "photo",   title: "Photography",      icon: "📷", num: "02",
-    bg: "#1e4d8c", color: "#fff",
+    img: "img/photography  app.webp", color: "#fff",
     services: ["Editorial","Product","Portrait","Event Coverage","Art Direction"],
   },
   {
     id: "brand",   title: "Brand Identity",   icon: "✦",  num: "03",
-    bg: "#6d28d9", color: "#fff",
+    img: "img/brand.webp", color: "#fff",
     services: ["Strategy","Visual Identity","Art Direction","Copywriting","DTP"],
   },
   {
     id: "social",  title: "Social Media",     icon: "◈",  num: "04",
-    bg: "#c2440e", color: "#fff",
+    img: "img/smm.webp", color: "#fff",
     services: ["Strategy","Content Creation","TikTok / Reels","Community Mgmt","Influencer"],
   },
   {
-    id: "events",  title: "Activations",      icon: "⚡", num: "05",
-    bg: "#065f46", color: "#fff",
-    services: ["Event Planning","Pop-ups","Production","Experiential","Art Direction"],
+    id: "events",  title: "Website & system", icon: "⚡", num: "05",
+    img: "img/dev.webp", color: "#fff",
+    services: ["Landing page","E-commerce sites","Mobile Applications","Business Websites",],
   },
   {
     id: "motion",  title: "Motion & Post",    icon: "∞",  num: "06",
-    bg: "#7f1d1d", color: "#fff",
+    img: "img/color_grading.webp", color: "#fff",
     services: ["VFX","Colour Grading","Sound Design","Animation","Titles"],
   },
 ];
@@ -60,7 +61,7 @@ const TOTAL      = CARDS.length;
 const PEEK       = 20; // Reduced to fit small screens
 const SCALE_STEP = 0.04;
 
-// ── Mobile carta helpers (unchanged) ──────────────────────────────────────
+// ── Mobile carta helpers ─────────────────────────────────────────────────
 function stackPos(pos) {
   const centerOffset = ((TOTAL - 1) * PEEK) / 2;
   return {
@@ -69,27 +70,6 @@ function stackPos(pos) {
     scale: 1 - pos * SCALE_STEP,
     zIndex: TOTAL - pos, x:0, rotation:0,
   };
-}
-function setDeck(cards, order) {
-  order.forEach((idx, pos) => gsap.set(cards[idx], stackPos(pos)));
-}
-function throwToBack(cards, order, done) {
-  const fi = order[0], front = cards[fi], bp = stackPos(TOTAL-1);
-  const tl = gsap.timeline({ onComplete:done });
-  tl.to(front, { x:160, y:-280, rotation:15, scale:0.75, duration:0.45, ease:"power2.inOut" });
-  order.slice(1).forEach((ci,i) => tl.to(cards[ci], { ...stackPos(i), duration:0.5, ease:"power2.out" }, 0));
-  tl.set(front, { xPercent:-50, yPercent:-50, x:0, y:bp.y-20, scale:bp.scale, zIndex:bp.zIndex, rotation:-4 });
-  tl.to(front, { y:bp.y, rotation:0, duration:0.3, ease:"back.out(1.5)" });
-  order.push(order.shift());
-}
-function throwToFront(cards, order, done) {
-  const bi = order[TOTAL-1], back = cards[bi], fp = stackPos(0);
-  const tl = gsap.timeline({ onComplete:done });
-  tl.to(back, { x:-160, y:-280, rotation:-15, scale:0.75, duration:0.45, ease:"power2.inOut" });
-  order.slice(0,-1).forEach((ci,i) => tl.to(cards[ci], { ...stackPos(i+1), duration:0.5, ease:"power2.out" }, 0));
-  tl.set(back, { xPercent:-50, yPercent:-50, x:0, y:fp.y+20, scale:fp.scale, zIndex:fp.zIndex, rotation:6 });
-  tl.to(back, { y:fp.y, rotation:0, duration:0.3, ease:"back.out(1.5)" });
-  order.unshift(order.pop());
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -105,13 +85,10 @@ const ServiceCards = () => {
 
     const mm = gsap.matchMedia();
 
-    // ── DESKTOP / TABLET: full-width horizontal slide ────────────────────
+    // ── DESKTOP / TABLET: pure timeline horizontal slide ────────────────────
     mm.add("(min-width: 769px)", () => {
       const SCROLL_PER = window.innerHeight * 0.9;
-      const totalSteps = TOTAL - 1;   // 5 transitions for 6 cards
-      let prevStep   = 0;
-      const queue    = [];
-      let animating  = false;
+      const totalSteps = TOTAL - 1;
 
       // Initial positions:
       cards.forEach((card, i) => {
@@ -121,172 +98,149 @@ const ServiceCards = () => {
           clipPath: i === 0 ? "inset(0% 0% 0% 0% round 0px)" : "inset(12% -10% 12% 100% round 24px)",
           scale: 1,
           opacity: 1,
-          zIndex: i === 0 ? 2 : 1,
+          zIndex: i + 1, // natural stacking (higher index = on top)
           transformOrigin: "center center",
         });
         card.style.willChange = "clip-path, transform, opacity";
       });
 
-      // ── Progress dots ──────────────────────────────────────────────────
       const dots = gsap.utils.toArray("[data-dtop-dot]", wrapper);
-      const refreshDots = (step) => {
-        dots.forEach((dot, i) => {
-          gsap.to(dot, {
-            scale:   i === step ? 1.6 : 1,
-            opacity: i === step ? 1 : 0.28,
-            duration: 0.4,
-            ease: "power2.out"
-          });
-        });
-      };
-      refreshDots(0);
 
-      // ── Queue runner ───────────────────────────────────────────────────
-      const runNext = () => {
-        animating = false;
-        if (!queue.length) return;
-        animating = true;
-        const { type, idx } = queue.shift();
-        const card = cards[idx];
-        const prevCard = cards[idx - 1];
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: "top top",
+          end: `+=${SCROLL_PER * totalSteps}`,
+          pin: true,
+          pinSpacing: true,
+          id: "dtop-pin",
+          scrub: 1, // Natively smooth scrub replaces the manual queue
+          snap: {
+            snapTo: 1 / totalSteps,
+            duration: { min: 0.25, max: 0.5 },
+            ease: "power1.inOut",
+          },
+          onUpdate(self) {
+            // Only update dots based on scrub progress
+            const step = Math.round(self.progress * totalSteps);
+            dots.forEach((dot, i) => {
+              gsap.to(dot, {
+                scale: i === step ? 1.6 : 1,
+                opacity: i === step ? 1 : 0.28,
+                duration: 0.3,
+                overwrite: "auto",
+              });
+            });
+          },
+        },
+      });
 
-        if (type === "in") {
-          gsap.set(card, { zIndex: TOTAL + 10 });
-          const tl = gsap.timeline({
-            onComplete: () => {
-              gsap.set(card, { zIndex: idx + 2 }); // settle above cards below it
-              refreshDots(idx);
-              runNext();
-            },
-          });
+      // Build the pure timeline
+      for (let i = 1; i < TOTAL; i++) {
+        const card = cards[i];
+        const prevCard = cards[i - 1];
 
-          // Wipe new card in from right using clip-path
-          tl.fromTo(card,
-            { clipPath: "inset(12% -10% 12% 100% round 24px)" },
+        tl.fromTo(
+          card,
+          { clipPath: "inset(12% -10% 12% 100% round 24px)" },
+          {
+            clipPath: "inset(0% 0% 0% 0% round 0px)",
+            duration: 1,
+            ease: "none",
+          },
+          i - 1
+        );
+
+        if (prevCard) {
+          tl.to(
+            prevCard,
             {
-              clipPath: "inset(0% 0% 0% 0% round 0px)",
-              duration: 1.0,
-              ease: "power4.inOut",
-            },
-            0
-          );
-
-          // Push back the previous card for 3D depth
-          if (prevCard) {
-            tl.to(prevCard, {
               scale: 0.88,
               opacity: 0.25,
-              duration: 1.0,
-              ease: "power4.inOut",
-            }, 0);
-          }
-        } else {
-          // Slide out
-          gsap.set(card, { zIndex: TOTAL + 10 });
-          const tl = gsap.timeline({
-            onComplete: () => {
-              gsap.set(card, { zIndex: 1 });
-              refreshDots(idx - 1);
-              runNext();
+              duration: 1,
+              ease: "none",
             },
-          });
-
-          // Wipe current card out to the right
-          tl.to(card, {
-            clipPath: "inset(12% -10% 12% 100% round 24px)",
-            duration: 0.9,
-            ease: "power4.inOut",
-          }, 0);
-
-          // Restore the previous card
-          if (prevCard) {
-            tl.to(prevCard, {
-              scale: 1,
-              opacity: 1,
-              duration: 0.9,
-              ease: "power4.inOut",
-            }, 0);
-          }
+            i - 1
+          );
         }
+      }
+
+      return () => {
+        ScrollTrigger.getById("dtop-pin")?.kill();
       };
-
-      const enqueue = (item) => {
-        queue.push(item);
-        if (!animating) runNext();
-      };
-
-      // ── Single pinned ScrollTrigger with onUpdate ──────────────────────
-      ScrollTrigger.create({
-        trigger:    section,
-        start:      "top top",
-        end:        `+=${SCROLL_PER * totalSteps}`,
-        pin:        true,
-        pinSpacing: true,
-        id:         "dtop-pin",
-        snap: {
-          snapTo:   1 / totalSteps,
-          duration: { min:0.25, max:0.55 },
-          ease:     "power1.inOut",
-        },
-        onUpdate(self) {
-          const currentStep = Math.round(self.progress * totalSteps);
-          if (currentStep === prevStep) return;
-
-          if (currentStep > prevStep) {
-            for (let s = prevStep + 1; s <= currentStep; s++) enqueue({ type:"in",  idx:s });
-          } else {
-            for (let s = prevStep;     s >  currentStep; s--) enqueue({ type:"out", idx:s });
-          }
-          prevStep = currentStep;
-        },
-      });
-
-      return () => { ScrollTrigger.getById("dtop-pin")?.kill(); };
     });
 
-    // ── MOBILE: CARTA deck (logic unchanged, hint fix applied in JSX) ────
+    // ── MOBILE: CARTA deck pure timeline ──────────────────────────────────
     mm.add("(max-width: 768px)", () => {
       const SCROLL_PER = window.innerHeight * 0.85;
-      const order      = [0,1,2,3,4,5];
-      let prevStep     = 0;
-      const queue      = [];
-      let animating    = false;
 
-      const runNext = () => {
-        animating = false;
-        if (!queue.length) return;
-        animating = true;
-        const action = queue.shift();
-        if (action === 1)  throwToBack(cards,  order, runNext);
-        else               throwToFront(cards, order, runNext);
-      };
-      const enqueue = (a) => { queue.push(a); if (!animating) runNext(); };
+      // Set initial deck position
+      cards.forEach((card, i) => {
+        gsap.set(card, stackPos(i));
+        card.style.willChange = "transform";
+      });
 
-      setDeck(cards, order);
-
-      ScrollTrigger.create({
-        trigger:    section,
-        start:      "top top",
-        end:        `+=${SCROLL_PER * TOTAL}`,
-        pin:        true,
-        pinSpacing: true,
-        id:         "carta-pin",
-        snap: {
-          snapTo:   1 / TOTAL,
-          duration: { min:0.3, max:0.6 },
-          ease:     "power2.inOut",
-        },
-        onUpdate(self) {
-          const currentStep = Math.round(self.progress * TOTAL);
-          if (currentStep === prevStep) return;
-          const diff = currentStep - prevStep;
-          if (diff > 0) for (let i=0;i<diff;i++)  enqueue(1);
-          else          for (let i=0;i<-diff;i++) enqueue(-1);
-          prevStep = currentStep;
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: section,
+          start: "top top",
+          end: `+=${SCROLL_PER * TOTAL}`,
+          pin: true,
+          pinSpacing: true,
+          id: "carta-pin",
+          scrub: 1, // Replaces throwing queue completely
+          snap: {
+            snapTo: 1 / TOTAL,
+            duration: { min: 0.3, max: 0.6 },
+            ease: "power2.inOut",
+          },
         },
       });
 
-      return () => { ScrollTrigger.getById("carta-pin")?.kill(); };
+      for (let step = 0; step < TOTAL; step++) {
+        const frontIdx = step;
+        const frontCard = cards[frontIdx];
+
+        // 1. Throw out
+        tl.to(
+          frontCard,
+          { x: 160, y: -280, rotation: 15, scale: 0.75, duration: 0.5, ease: "power1.inOut" },
+          step
+        );
+
+        // 2. Drop zIndex instantly when it's out of the way
+        tl.set(frontCard, { zIndex: 0 }, step + 0.5);
+
+        // 3. Drop back into the bottom of the deck
+        const bp = stackPos(TOTAL - 1);
+        tl.to(
+          frontCard,
+          { x: 0, y: bp.y, rotation: 0, scale: bp.scale, duration: 0.5, ease: "power1.inOut" },
+          step + 0.5
+        );
+
+        // 4. Set accurate final zIndex at the end of the step
+        tl.set(frontCard, { zIndex: bp.zIndex }, step + 1);
+
+        // 5. Shift all other cards forward
+        for (let i = 1; i < TOTAL; i++) {
+          const cardIdx = (frontIdx + i) % TOTAL;
+          const card = cards[cardIdx];
+          const targetPos = stackPos(i - 1);
+
+          tl.to(
+            card,
+            { y: targetPos.y, scale: targetPos.scale, duration: 1, ease: "none" },
+            step
+          );
+
+          tl.set(card, { zIndex: targetPos.zIndex }, step + 1);
+        }
+      }
+
+      return () => {
+        ScrollTrigger.getById("carta-pin")?.kill();
+      };
     });
 
     return () => {
@@ -387,22 +341,29 @@ const ServiceCards = () => {
             <div
               key={c.id}
               data-svc-card
-              className={cardClass}
-              style={{ background: c.bg, color: c.color }}
+              className={`${cardClass} bg-black`}
+              style={{ color: "#fff" }}
             >
-              <div className={peekClass}>
-                <span className="hidden font-mono text-[10px] uppercase tracking-[0.45em] opacity-40 min-[769px]:block">
+              <img
+                src={assetPath(c.img)}
+                alt={c.title}
+                className="pointer-events-none absolute left-0 top-0 z-0 size-full object-cover"
+              />
+              <div className="pointer-events-none absolute left-0 top-0 z-[1] size-full bg-black/40 max-[768px]:bg-black/50 min-[769px]:bg-gradient-to-t min-[769px]:from-black/90 min-[769px]:via-black/20 min-[769px]:to-transparent" />
+
+              <div className={peekClass} style={{ zIndex: 2 }}>
+                <span className="hidden font-mono text-[10px] uppercase tracking-[0.45em] opacity-80 min-[769px]:block">
                   ◈ What We Do
                 </span>
                 <span className="text-2xl leading-none min-[769px]:text-[clamp(22px,2.5vw,32px)]">
                   {c.icon}
                 </span>
-                <span className="font-mono text-[10px] uppercase tracking-[0.35em] opacity-45 min-[769px]:text-[clamp(10px,1vw,13px)]">
+                <span className="font-mono text-[10px] uppercase tracking-[0.35em] opacity-80 min-[769px]:text-[clamp(10px,1vw,13px)]">
                   {c.num}
                 </span>
               </div>
 
-              <div className={bodyClass}>
+              <div className={`${bodyClass} z-[2]`} style={{ zIndex: 2 }}>
                 <h3 className={titleClass} style={headlineFont}>{c.title}</h3>
                 <hr className="m-0 border-0 border-t border-white/20 min-[769px]:mb-[clamp(16px,2.5vh,28px)]" />
                 <ul className={listClass}>
