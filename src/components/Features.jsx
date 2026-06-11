@@ -51,7 +51,8 @@ export const BentoTilt = ({ children, className = "" }) => {
 const LazyFeatureVideo = ({ src, className = "" }) => {
   const videoRef = useRef(null);
   const [shouldLoad, setShouldLoad] = useState(false);
-  const videoSrc = resolveProjectUrl(src);
+  const videoWebm = resolveProjectUrl(`${src}.webm`);
+  const videoMp4 = resolveProjectUrl(`${src}.mp4`);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -80,14 +81,20 @@ const LazyFeatureVideo = ({ src, className = "" }) => {
   return (
     <video
       ref={videoRef}
-      src={shouldLoad ? videoSrc : undefined}
       loop
       muted
       autoPlay={shouldLoad}
       playsInline
       preload={shouldLoad ? "metadata" : "none"}
       className={className}
-    />
+    >
+      {shouldLoad && (
+        <>
+          <source src={videoWebm} type="video/webm" />
+          <source src={videoMp4} type="video/mp4" />
+        </>
+      )}
+    </video>
   );
 };
 
@@ -239,7 +246,7 @@ const HorizontalPullWords = () => {
 };
 
 export const BentoCard = ({ src, title, description, workUrl }) => {
-  const href = resolveProjectUrl(workUrl || src);
+  const href = resolveProjectUrl(workUrl || `${src}.mp4`);
   const external = isAbsoluteUrl(href);
 
   return (
@@ -283,7 +290,7 @@ const Features = () => (
     <div className="container mx-auto px-3 md:px-10">
       <BentoTilt className="border-hsla relative mb-3 h-[min(78vw,28rem)] min-h-72 w-full overflow-hidden rounded-md sm:mb-5 sm:h-96 md:mb-7 md:h-[65vh]">
         <BentoCard
-          src="videos/feature-1.mp4"
+          src="videos_compressed/feature-1"
           title={
             <>
               fi<b>l</b>m
@@ -296,7 +303,7 @@ const Features = () => (
       <div className="grid w-full auto-rows-[minmax(9.5rem,34vw)] grid-cols-2 gap-3 sm:auto-rows-[minmax(13rem,30vw)] sm:gap-5 md:auto-rows-[32vh] md:gap-7 lg:auto-rows-[38vh]">
         <BentoTilt className="bento-tilt_1 col-span-1 row-span-2 min-h-80 sm:min-h-[28rem] md:min-h-0">
           <BentoCard
-            src="videos/feature-2.mp4"
+            src="videos_compressed/feature-2"
             title={
               <>
                 eve<b>n</b>ts
@@ -308,7 +315,7 @@ const Features = () => (
 
         <BentoTilt className="bento-tilt_1 col-span-1">
           <BentoCard
-            src="videos/feature-3.mp4"
+            src="videos_compressed/feature-3"
             title={
               <>
                 bra<b>n</b>d
@@ -320,7 +327,7 @@ const Features = () => (
 
         <BentoTilt className="bento-tilt_1 col-span-1">
           <BentoCard
-            src="videos/feature-4.mp4"
+            src="videos_compressed/feature-4"
             title={
               <>
                 w<b>e</b>bsites
@@ -342,7 +349,7 @@ const Features = () => (
 
         <BentoTilt className="bento-tilt_2 col-span-1">
           <BentoCard
-            src="videos/feature-5.mp4"
+            src="videos_compressed/feature-5"
             title={
               <>
                 m<b>o</b>tion

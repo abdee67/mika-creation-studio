@@ -229,7 +229,7 @@ const Hero = () => {
     });
   });
 
-  const getVideoSrc = (index) => assetPath(`videos/hero-${index}.mp4`);
+  const getVideoSrc = (index, ext) => assetPath(`videos_compressed/hero-${index}.${ext}`);
 
   return (
     <>
@@ -252,7 +252,6 @@ const Hero = () => {
           {videos.map((videoIndex) => (
             <video
               key={videoIndex}
-              src={getVideoSrc(videoIndex)}
               loop
               muted
               playsInline
@@ -263,7 +262,10 @@ const Hero = () => {
               data-hero-slot-video
               className="absolute left-0 top-0 size-full object-cover object-center"
               style={{ willChange: "clip-path" }}
-            />
+            >
+              <source src={getVideoSrc(videoIndex, 'webm')} type="video/webm" />
+              <source src={getVideoSrc(videoIndex, 'mp4')} type="video/mp4" />
+            </video>
           ))}
 
           <div className="mask-clip-path absolute-center absolute z-50 size-36 cursor-pointer overflow-hidden rounded-lg sm:size-52 md:size-64">
@@ -273,28 +275,34 @@ const Hero = () => {
                 className="origin-center scale-50 opacity-0 transition-all duration-500 ease-in hover:scale-100 hover:opacity-100"
               >
                 <video
-                  src={getVideoSrc(getNextIndex(previewIndex))}
+                  key={`current-${getNextIndex(previewIndex)}`}
                   loop
                   muted
                   playsInline
                   preload="metadata"
                   id="current-video"
                   className="size-36 origin-center scale-150 object-cover object-center sm:size-52 md:size-64"
-                />
+                >
+                  <source src={getVideoSrc(getNextIndex(previewIndex), 'webm')} type="video/webm" />
+                  <source src={getVideoSrc(getNextIndex(previewIndex), 'mp4')} type="video/mp4" />
+                </video>
               </div>
             </VideoPreview>
           </div>
 
           <video
             ref={clickVideoRef}
-            src={getVideoSrc(clickedIndex)}
+            key={`click-${clickedIndex}`}
             loop
             muted
             playsInline
             preload="metadata"
             id="click-video"
             className="absolute-center invisible absolute z-20 size-36 object-cover object-center sm:size-52 md:size-64"
-          />
+          >
+            <source src={getVideoSrc(clickedIndex, 'webm')} type="video/webm" />
+            <source src={getVideoSrc(clickedIndex, 'mp4')} type="video/mp4" />
+          </video>
 
           {/* Bottom-right title (inside frame) */}
           <h1 className="special-font hero-heading absolute bottom-5 right-5 z-40 text-blue-75">
