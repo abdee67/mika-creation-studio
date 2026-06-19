@@ -18,9 +18,9 @@ import { ScrollTrigger } from "gsap/all";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const LEFT_IMGS = ["img/about.webp", "img/gallery-1.webp", "img/gallery-2.webp", "img/gallery-3.webp"];
-const CENTER_IMGS = ["img/contact-1.webp", "img/contact-2.webp", "img/gallery-4.webp"];
-const RIGHT_IMGS = ["img/gallery-5.webp", "img/swordman.webp", "img/entrance.webp", "img/about.webp"];
+const LEFT_IMGS = ["img/left_1.webp", "img/left_2.webp", "img/left_3.webp", "img/left_3.webp"];
+const CENTER_IMGS = ["img/center_1.webp", "img/center_2.webp", "img/center_3.webp"];
+const RIGHT_IMGS = ["img/right_1.webp", "img/right_2.webp", "img/right_3.webp", "img/right_4.webp"];
 const WORDS = ["FEARLESS", "MOTIVATED", "BOLD", "RELENTLESS", "CREATIVE", "HONEST", "DARING", "WILD"];
 
 const imageEdgeFade = {
