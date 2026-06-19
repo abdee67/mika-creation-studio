@@ -18,9 +18,9 @@ import { ScrollTrigger } from "gsap/all";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const LEFT_IMGS = ["img/about.webp", "img/gallery-1.webp", "img/gallery-2.webp", "img/gallery-3.webp"];
-const CENTER_IMGS = ["img/contact-1.webp", "img/contact-2.webp", "img/gallery-4.webp"];
-const RIGHT_IMGS = ["img/gallery-5.webp", "img/swordman.webp", "img/entrance.webp", "img/about.webp"];
+const LEFT_IMGS = ["img/left_1.webp", "img/left_2.webp", "img/left_3.webp", "img/left_3.webp"];
+const CENTER_IMGS = ["img/center_1.webp", "img/center_2.webp", "img/center_3.webp"];
+const RIGHT_IMGS = ["img/right_1.webp", "img/right_2.webp", "img/right_3.webp", "img/right_4.webp"];
 const WORDS = ["FEARLESS", "MOTIVATED", "BOLD", "RELENTLESS", "CREATIVE", "HONEST", "DARING", "WILD"];
 
 const imageEdgeFade = {
@@ -50,7 +50,7 @@ const Dot = () => (
 );
 
 // ── Text marquee stripe ────────────────────────────────────────────────────
-const TextStripe = ({ dir = "rtl", speed = 7 }) => {
+const TextStripe = ({ dir = "rtl", speed = 15 }) => {
   const items = [...WORDS, ...WORDS, ...WORDS];
   return (
     <div style={{ overflow: "hidden", width: "100%" }}>
@@ -120,7 +120,7 @@ const VertCol = ({ imgs, dir, speed = 7, height }) => {
             overflow: "hidden",
             flexShrink: 0,
           }}>
-            <img src={src} alt="" loading="lazy"
+            <img src={src} alt="" loading="lazy" decoding="async"
               style={{
                 width: "100%",
                 height: "100%",
@@ -128,6 +128,7 @@ const VertCol = ({ imgs, dir, speed = 7, height }) => {
                 display: "block",
                 transform: "translateZ(0) scale(1.16)",
                 backfaceVisibility: "hidden",
+                loading:"lazy",
               }} />
             <div style={{
               ...imageEdgeFade,
@@ -248,7 +249,7 @@ const Story = () => {
           borderBottom: "1px solid rgba(255,255,255,0.08)",
           padding: "24px 0", overflow: "hidden",
         }}>
-          <TextStripe dir="rtl" speed={7} />
+          <TextStripe dir="rtl" speed={15} />
         </div>
 
         {/* HEADER */}
@@ -278,7 +279,7 @@ const Story = () => {
               maxWidth: "440px", fontSize: "clamp(13px,1.3vw,16px)", lineHeight: 1.85,
               color: "rgba(255,255,255,0.45)", fontFamily: "Georgia,serif", fontStyle: "italic",
             }}>
-              We are a collective of rebels — storytellers, creators, and
+              We are a collective of storytellers, creators, and
               visionaries who refuse to follow the expected path. Every frame we
               capture is a declaration. Every project we touch becomes a statement.
               We don&apos;t make content. We make culture.
@@ -327,7 +328,7 @@ const Story = () => {
                 aspectRatio: "3/4",
                 overflow: "hidden",
               }}>
-                <img src={src} alt="" loading="lazy"
+                <img src={src} alt="" loading="lazy" decoding="async"
                   style={{
                     width: "100%",
                     height: "100%",
@@ -360,7 +361,7 @@ const Story = () => {
           borderBottom: "1px solid rgba(255,255,255,0.08)",
           padding: "24px 0", overflow: "hidden", marginTop: 0,
         }}>
-          <TextStripe dir="ltr" speed={7} />
+          <TextStripe dir="ltr" speed={15} />
         </div>
 
       </section>

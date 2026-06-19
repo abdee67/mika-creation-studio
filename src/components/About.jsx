@@ -17,10 +17,9 @@ const About = () => {
       },
     });
 
-    clipAnimation.to(".mask-clip-path", {
-      width: "100vw",
-      height: "100vh",
-      borderRadius: 0,
+    clipAnimation.to(".about-image", {
+      clipPath: "inset(0px 0px 0px 0px round 0px)",
+      ease: "power1.inOut"
     });
   });
 
@@ -47,6 +46,8 @@ const About = () => {
         <div className="mask-clip-path about-image">
           <img
             src="img/about.webp"
+            loading="lazy"
+            decoding="async"
             alt="Background"
             className="absolute left-0 top-0 size-full object-cover"
           />

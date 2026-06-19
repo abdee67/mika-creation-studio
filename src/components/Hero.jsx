@@ -14,7 +14,6 @@ gsap.registerPlugin(ScrollTrigger);
 const totalVideos = 4;
 const videos = Array.from({ length: totalVideos }, (_, index) => index + 1);
 const requiredHeroAssets = [
-  "noise-image",
   "logo-image",
   ...videos.map((videoIndex) => `hero-video-${videoIndex}`),
 ];
@@ -57,7 +56,6 @@ const Hero = () => {
       image.src = src;
     };
 
-    preloadImage(assetPath("img/noise.png"), "noise-image");
     preloadImage(assetPath("img/logo.png"), "logo-image");
 
     const fallbackTimer = setTimeout(() => {
@@ -66,6 +64,17 @@ const Hero = () => {
 
     return () => clearTimeout(fallbackTimer);
   }, [markHeroAssetReady]);
+
+  useEffect(() => {
+    if (!showLoader) {
+      const videoEls = document.querySelectorAll("[data-hero-slot-video]");
+      videoEls.forEach((video) => {
+        video.play().catch((err) => {
+          console.log("Video playback failed or was interrupted:", err);
+        });
+      });
+    }
+  }, [showLoader]);
 
   const handleMiniVdClick = () => {
     const nextIndex = getNextIndex(activeIndexRef.current);
@@ -113,8 +122,10 @@ const Hero = () => {
   useGSAP(() => {
     const videoEls = gsap.utils.toArray("[data-hero-slot-video]");
     const getSlots = () => {
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
+      const frame = document.getElementById("video-frame");
+      const frameRect = frame?.getBoundingClientRect();
+      const viewportWidth = frameRect?.width || window.innerWidth;
+      const viewportHeight = frameRect?.height || window.innerHeight;
       const miniWidth = gsap.utils.clamp(110, 320, viewportWidth * 0.24);
       const miniHeight = gsap.utils.clamp(82, 230, viewportHeight * 0.22);
       const edgeX = gsap.utils.clamp(12, 72, viewportWidth * 0.045);
@@ -126,47 +137,27 @@ const Hero = () => {
 
       return {
         center: {
-          x: 0,
-          y: 0,
-          width: viewportWidth,
-          height: viewportHeight,
-          borderRadius: 0,
+          clipPath: "inset(0px 0px 0px 0px round 0px)",
           autoAlpha: 1,
           scale: 1,
         },
         topRight: {
-          x: viewportWidth - miniWidth - edgeX,
-          y: topY,
-          width: miniWidth,
-          height: miniHeight,
-          borderRadius: 8,
+          clipPath: `inset(${topY}px ${edgeX}px ${viewportHeight - topY - miniHeight}px ${viewportWidth - edgeX - miniWidth}px round 8px)`,
           autoAlpha: 1,
           scale: 1,
         },
         bottomLeft: {
-          x: edgeX,
-          y: bottomY,
-          width: miniWidth,
-          height: miniHeight,
-          borderRadius: 8,
+          clipPath: `inset(${bottomY}px ${viewportWidth - edgeX - miniWidth}px ${viewportHeight - bottomY - miniHeight}px ${edgeX}px round 8px)`,
           autoAlpha: 1,
           scale: 1,
         },
         topLeft: {
-          x: edgeX,
-          y: topY,
-          width: miniWidth,
-          height: miniHeight,
-          borderRadius: 8,
+          clipPath: `inset(${topY}px ${viewportWidth - edgeX - miniWidth}px ${viewportHeight - topY - miniHeight}px ${edgeX}px round 8px)`,
           autoAlpha: 1,
           scale: 1,
         },
         bottomRight: {
-          x: viewportWidth - miniWidth - edgeX,
-          y: bottomY,
-          width: miniWidth,
-          height: miniHeight,
-          borderRadius: 8,
+          clipPath: `inset(${bottomY}px ${edgeX}px ${viewportHeight - bottomY - miniHeight}px ${viewportWidth - edgeX - miniWidth}px round 8px)`,
           autoAlpha: 1,
           scale: 1,
         },
@@ -238,7 +229,7 @@ const Hero = () => {
     });
   });
 
-  const getVideoSrc = (index) => assetPath(`videos/hero-${index}.mp4`);
+  const getVideoSrc = (index, ext) => assetPath(`videos_compressed/hero-${index}.${ext}`);
 
   return (
     <>
@@ -250,34 +241,31 @@ const Hero = () => {
         />
       )}
 
-      <div id="hero" className="relative h-dvh w-full overflow-x-hidden">
+      <div
+        id="hero"
+        className="relative h-dvh min-h-screen w-full overflow-x-hidden bg-black"
+      >
         <div
           id="video-frame"
-          className="relative z-10 h-dvh w-screen overflow-hidden rounded-lg bg-blue-75"
+          className="relative z-10 h-dvh min-h-screen w-screen overflow-hidden rounded-none bg-black"
         >
-          <img
-            src={assetPath("img/noise.png")}
-            alt=""
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-0 z-[35] size-full object-cover"
-            style={{ opacity: 0.85 }}
-          />
-
           {videos.map((videoIndex) => (
             <video
               key={videoIndex}
-              src={getVideoSrc(videoIndex)}
-              autoPlay
               loop
               muted
               playsInline
-              preload="auto"
+              preload="metadata"
               onCanPlay={() => markHeroAssetReady(`hero-video-${videoIndex}`)}
               onLoadedData={() => markHeroAssetReady(`hero-video-${videoIndex}`)}
               onError={() => markHeroAssetReady(`hero-video-${videoIndex}`)}
               data-hero-slot-video
-              className="absolute left-0 top-0 object-cover object-center"
-            />
+              className="absolute left-0 top-0 size-full object-cover object-center"
+              style={{ willChange: "clip-path" }}
+            >
+              <source src={getVideoSrc(videoIndex, 'webm')} type="video/webm" />
+              <source src={getVideoSrc(videoIndex, 'mp4')} type="video/mp4" />
+            </video>
           ))}
 
           <div className="mask-clip-path absolute-center absolute z-50 size-36 cursor-pointer overflow-hidden rounded-lg sm:size-52 md:size-64">
@@ -287,39 +275,45 @@ const Hero = () => {
                 className="origin-center scale-50 opacity-0 transition-all duration-500 ease-in hover:scale-100 hover:opacity-100"
               >
                 <video
-                  src={getVideoSrc(getNextIndex(previewIndex))}
+                  key={`current-${getNextIndex(previewIndex)}`}
                   loop
                   muted
                   playsInline
                   preload="metadata"
                   id="current-video"
                   className="size-36 origin-center scale-150 object-cover object-center sm:size-52 md:size-64"
-                />
+                >
+                  <source src={getVideoSrc(getNextIndex(previewIndex), 'webm')} type="video/webm" />
+                  <source src={getVideoSrc(getNextIndex(previewIndex), 'mp4')} type="video/mp4" />
+                </video>
               </div>
             </VideoPreview>
           </div>
 
           <video
             ref={clickVideoRef}
-            src={getVideoSrc(clickedIndex)}
+            key={`click-${clickedIndex}`}
             loop
             muted
             playsInline
             preload="metadata"
             id="click-video"
             className="absolute-center invisible absolute z-20 size-36 object-cover object-center sm:size-52 md:size-64"
-          />
+          >
+            <source src={getVideoSrc(clickedIndex, 'webm')} type="video/webm" />
+            <source src={getVideoSrc(clickedIndex, 'mp4')} type="video/mp4" />
+          </video>
 
           {/* Bottom-right title (inside frame) */}
           <h1 className="special-font hero-heading absolute bottom-5 right-5 z-40 text-blue-75">
-            ST<b>U</b>DIO
+            CRE<b>A</b>TI<b>ON</b>
           </h1>
 
           {/* Hero text content */}
           <div id="hero-content" className="absolute left-0 top-0 z-40 size-full">
             <div className="mt-20 max-w-[min(92vw,38rem)] px-4 sm:mt-24 sm:px-10">
               <h1 className="special-font hero-heading text-blue-100">
-                redefi<b>n</b>e
+                mik<b>a</b>
               </h1>
               <p className="mb-5 max-w-60 font-robert-regular text-sm text-blue-100 sm:max-w-64 sm:text-base">
                 Video production <br /> Events, brands & Softwares
@@ -327,6 +321,7 @@ const Hero = () => {
               <Button
                 id="watch-trailer"
                 title="Start a project"
+                href="#contact"
                 leftIcon={<TiLocationArrow />}
                 containerClass="bg-yellow-300 flex-center gap-1"
               />
