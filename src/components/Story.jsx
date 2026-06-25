@@ -18,9 +18,9 @@ import { ScrollTrigger } from "gsap/all";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const LEFT_IMGS = ["img/left_1.webp", "img/left_2.webp", "img/left_3.webp", "img/left_3.webp"];
-const CENTER_IMGS = ["img/center_1.webp", "img/center_2.webp", "img/center_3.webp"];
-const RIGHT_IMGS = ["img/right_1.webp", "img/right_2.webp", "img/right_3.webp", "img/right_4.webp"];
+const LEFT_IMGS = ["img/center_1.webp"];
+const CENTER_IMGS = ["img/left_1.webp"];
+const RIGHT_IMGS = ["img/right_4.webp"];
 const WORDS = ["FEARLESS", "MOTIVATED", "BOLD", "RELENTLESS", "CREATIVE", "HONEST", "DARING", "WILD"];
 
 const imageEdgeFade = {
@@ -75,11 +75,8 @@ const TextStripe = ({ dir = "rtl", speed = 15 }) => {
   );
 };
 
-// ── Desktop vertical auto-scroll column ───────────────────────────────────
-// Wraps in its OWN height+overflow box so it never bleeds outside.
-// Fade overlays are absolutely positioned inside here.
-const VertCol = ({ imgs, dir, speed = 7, height }) => {
-  const repeated = Array.from({ length: 5 }, () => imgs).flat();
+// ── Desktop vertical column (NO auto-scroll) ────────────────────────────
+const VertCol = ({ imgs, height }) => {
   return (
     <div style={{
       position: "relative",
@@ -106,19 +103,18 @@ const VertCol = ({ imgs, dir, speed = 7, height }) => {
       }} />
 
       <div style={{
-        display: "flex", flexDirection: "column", gap: 0,
-        animation: `vert-${dir} ${speed}s linear infinite`,
-        willChange: "transform",
-        transform: "translate3d(0,0,0)",
-        backfaceVisibility: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        gap: 0,
+        height: "100%",
       }}>
-        {repeated.map((src, i) => (
+        {imgs.map((src, i) => (
           <div key={i} style={{
             position: "relative",
             width: "100%",
-            aspectRatio: "3/4",
+            flex: "1 1 0",
             overflow: "hidden",
-            flexShrink: 0,
+            minHeight: 0,
           }}>
             <img src={src} alt="" loading="lazy" decoding="async"
               style={{
@@ -128,7 +124,6 @@ const VertCol = ({ imgs, dir, speed = 7, height }) => {
                 display: "block",
                 transform: "translateZ(0) scale(1.16)",
                 backfaceVisibility: "hidden",
-                loading:"lazy",
               }} />
             <div style={{
               ...imageEdgeFade,
